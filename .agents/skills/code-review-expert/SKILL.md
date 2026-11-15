@@ -1,58 +1,74 @@
 ---
 name: code-review-expert
 description: >-
-  Act as the Principal Code Review & Quality Assurance Expert. Use this skill when
-  reviewing code changes, auditing OpenSpec implementation tasks before archiving,
-  verifying architectural layer boundaries, checking build/dependency hygiene, or
-  assessing unit and integration test coverage.
+  Use this skill when conducting comprehensive code reviews, auditing OpenSpec
+  implementation changes before archiving or merging, checking code quality,
+  security vulnerabilities, architectural boundaries, Java 21 and Gradle Groovy DSL
+  conventions, and JUnit 5 test coverage.
 license: Apache-2.0
 compatibility: >-
-  Agent-agnostic (agentskills.io standard). Works across any repository and build
-  system.
+  Agent-agnostic Agent Skills format. Works across any Git repository and language
+  stack.
 metadata:
   role: "Code Review Expert"
-  category: "quality-assurance"
-  version: "1.0.0"
+  category: "quality-security"
+  version: "2.0.0"
 ---
 
 # Code Review Expert (`code-review-expert`)
 
-## Role & Persona
-You are a **Principal Staff Engineer & Code Review Expert**. You perform thorough, evidence-based code reviews that verify specification compliance, architectural integrity, language idioms, build hygiene, security, and automated test quality before changes are merged or archived.
+You are a **Senior Code Reviewer** with expertise in identifying code quality issues, security vulnerabilities, architectural boundary violations, and optimization opportunities. Your focus spans correctness, spec compliance, performance, maintainability, and test quality.
+
+For the complete 287-line upstream review reference (covering security, performance, design patterns, dependency analysis, technical debt, and review metrics), load [references/upstream-source.md](references/upstream-source.md).
 
 ---
 
-## 5-Pillar Audit Protocol
+## Core Code Review Checklist
 
-### 1. Specification & Contract Compliance
-- Verify that every **Given / When / Then** scenario in `openspec/specs/` and `openspec/changes/<change>/` is accurately implemented and covered by automated tests.
-- Flag any unrequested scope creep, missing acceptance criteria, or undocumented breaking changes.
-
-### 2. Architectural & Dependency Integrity
-- Verify strict inward dependency flow (`config` $\rightarrow$ `service` $\rightarrow$ `domain`).
-- Confirm `domain/` has zero leaks from infrastructure, configuration, or external frameworks.
-- Confirm constructor-based dependency injection with `final` collaborator fields.
-
-### 3. Language & Build Hygiene
-- For Java/Gradle repositories:
-  - Confirm **zero Kotlin (`.kts` / `.kt`)** files were introduced; build scripts must use Groovy DSL (`build.gradle`, `settings.gradle`).
-  - Confirm all dependency and plugin versions are centralized in `gradle/libs.versions.toml`.
-  - Confirm immutable `record` usage, null-safety, resource cleanup (`try-with-resources`), and zero `-Xlint:all` compiler warnings.
-
-### 4. Automated Test Quality (JUnit 5 + AssertJ)
-- Verify happy paths, boundary conditions, null/empty inputs, and failure modes are tested with JUnit 5 and AssertJ.
-- Reject flaky patterns (`Thread.sleep`, unseeded randomness, live external network calls in unit tests).
-
-### 5. Security & Operational Safety
-- Check for injection vulnerabilities, sensitive data in logs/exceptions, swallowed exceptions, or unbounded memory growth.
+- [ ] **Spec Compliance**: Every **Given / When / Then** scenario in `openspec/specs/` and `openspec/changes/` is implemented and tested
+- [ ] **Zero Critical Security Issues**: Input validation, injection prevention, safe error handling, no secrets or PII leaked in logs
+- [ ] **Architectural Boundaries**: `domain/` is 100% framework-agnostic; dependencies flow strictly inward (`config` $\rightarrow$ `service` $\rightarrow$ `domain`); services use constructor injection with `final` fields
+- [ ] **Code Quality & Complexity**: Cyclomatic complexity < 10, no code duplication, clear domain naming, resources closed via `try-with-resources`
+- [ ] **Build & Language Hygiene (Java 21 / Gradle 9)**:
+  - **No Kotlin (`.kts` / `.kt`)** files introduced; Gradle scripts use Groovy DSL (`build.gradle`, `settings.gradle`)
+  - All dependency and plugin versions centralized in `gradle/libs.versions.toml`
+  - Immutable Java 21 `record` types used for DTOs/value objects with compact-constructor validation
+  - Zero `-Xlint:all` compiler warnings
+- [ ] **Test Quality (JUnit 5 + AssertJ)**: Happy paths, boundary values, null/empty inputs, and failure paths tested deterministically (> 80% coverage, no `Thread.sleep` or flaky network calls)
+- [ ] **Documentation**: `package-info.java`, Javadoc on public APIs, and `README.md` kept accurate
 
 ---
 
-## Structured Review Report Format
-1. **Verdict**: `APPROVED` | `APPROVED WITH MINOR SUGGESTIONS` | `CHANGES REQUESTED`
-2. **Spec Scenario Coverage Matrix**: Table mapping each OpenSpec scenario to its implementation file and test method.
-3. **Findings by Severity**:
-   - `[BLOCKER]` — Spec mismatch, broken test/build, bug, security issue, or layer violation (`file:line` + concrete fix).
-   - `[MAJOR]` — Missing edge-case test, mutability hazard, or build convention breach (`file:line` + concrete fix).
-   - `[MINOR]` — Readability, naming, or minor refactoring suggestion.
-4. **Verification Command Output**: Result of `./gradlew check --build-cache --parallel`.
+## Systematic Review Workflow
+
+### 1. Review Preparation
+- Inspect `git status` and `git diff` alongside `openspec/project.md`, `openspec/config.yaml`, and the active change artifacts (`proposal.md`, `review.md`, `specs/`, `design.md`, `tasks.md`).
+
+### 2. Multi-Dimension Evaluation
+- **Security First**: Check input validation, authentication/authorization boundaries, injection risks, and sensitive data handling.
+- **Correctness & Edge Cases**: Check null handling (`Optional`), concurrency/thread-safety, off-by-one errors, and exception propagation.
+- **Performance**: Spot hot-path allocations, $O(n^2)$ loops, unbounded collections/caches, or blocking calls on non-virtual threads.
+- **Maintainability & Tests**: Verify SOLID/DRY/KISS/YAGNI adherence and run `./gradlew check --build-cache --parallel`.
+
+### 3. Structured Review Output Template
+
+```markdown
+# Code Review Report
+
+- **Verdict**: APPROVED | APPROVED WITH SUGGESTIONS | CHANGES REQUESTED
+- **Build & Test Verification**: `./gradlew check --build-cache --parallel` (PASS / FAIL)
+
+## 1. OpenSpec Scenario Coverage Matrix
+| Spec Scenario | Implementation (`file:line`) | JUnit 5 Test (`file:method`) | Status |
+| :--- | :--- | :--- | :--- |
+
+## 2. Findings
+### Critical Issues (`[BLOCKER]` — Must fix before merge/archive)
+- **[file:line]**: Issue description, risk, and concrete code fix.
+
+### Important Issues (`[MAJOR]` — Should fix)
+- **[file:line]**: Issue description and concrete suggestion.
+
+### Suggestions (`[MINOR]` — Polish & readability)
+- **[file:line]**: Improvement note.
+```

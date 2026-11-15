@@ -1,20 +1,23 @@
-schema: spec-driven
+schema: spec-driven-reviewed
 
 context: |
   Tech stack: Java 21, Gradle 9 (Groovy DSL — no Kotlin, TOML Version Catalog in gradle/libs.versions.toml), SLF4J/Logback, JUnit 5, AssertJ
+  Vendored Specs & Schemas (Copy In, Don't Link Out):
+    - Agent Skills specification: .agents/spec/specification.md & .agents/spec/best-practices.md
+    - OpenSpec schemas: openspec/schemas/spec-driven-reviewed/schema.yaml & openspec/schemas/spec-driven/schema.yaml
   Architecture: Keep domain models framework-agnostic (domain/); place orchestration in service/; wire dependencies via constructor injection in config/; require unit tests for all new domain logic
-  Personas & Skills (.agents/skills/<name>/SKILL.md — formatted per Agent Skills spec):
+  Personas & Skills (.agents/skills/<name>/SKILL.md — formatted per .agents/spec/specification.md):
     - first-principles-thinking (.agents/skills/first-principles-thinking/SKILL.md): Deconstructs problems to fundamental truths and challenges assumptions during proposal and design
     - java-architect (.agents/skills/java-architect/SKILL.md): Leads module/package architecture and design.md
-    - openspec-reviewer (.agents/skills/openspec-reviewer/SKILL.md): Reviews proposal.md, specs/, design.md, and tasks.md before coding begins
+    - openspec-reviewer (.agents/skills/openspec-reviewer/SKILL.md): Produces review.md (OPTIMAL / IMPROVABLE / RETHINK) and reviews proposal.md, specs/, design.md, and tasks.md before coding begins
     - java-expert (.agents/skills/java-expert/SKILL.md): Leads Java 21, Gradle Groovy DSL, TOML catalog, and JUnit 5 + AssertJ implementation
-    - code-review-expert (.agents/skills/code-review-expert/SKILL.md): Audits spec compliance, layer boundaries, and test coverage before archiving/merging
+    - code-review-expert (.agents/skills/code-review-expert/SKILL.md): Audits spec compliance, layer boundaries, security, and test coverage before archiving/merging
     - readme-generator (.agents/skills/readme-generator/SKILL.md): Maintains README.md and package-info.java documentation
     - git-workflow-manager (.agents/skills/git-workflow-manager/SKILL.md): Manages branching and Conventional Commits linked to OpenSpec changes
     - cicd-expert (.agents/skills/cicd-expert/SKILL.md): Maintains CI/CD workflows and Gradle build caching
   Conventions:
     - Use constructor injection, Java 21 records for immutable DTOs/value objects, and clear domain naming
-    - Centralize all dependency and plugin versions in gradle/libs.versions.toml
+    - Centralize all dependency versions in gradle/libs.versions.toml
     - Use Groovy DSL (build.gradle & settings.gradle) exclusively — never Kotlin
   Verification: Every new service, domain model, or endpoint requires JUnit 5 unit tests and integration tests verified via './gradlew check' (or 'gwcheck') and reviewed by code-review-expert
 
@@ -23,8 +26,13 @@ rules:
     - Activate first-principles-thinking (.agents/skills/first-principles-thinking/SKILL.md) to challenge assumptions and isolate fundamental domain truths
     - Reference openspec/project.md and identify affected layers (config, domain, service)
     - Pass the openspec-reviewer Gate 1 check before advancing
+  review:
+    - Activate openspec-reviewer (.agents/skills/openspec-reviewer/SKILL.md) and template openspec/schemas/spec-driven-reviewed/templates/review.md
+    - Evaluate Problem Validity, Scope Discipline, Codebase Reality Check, Risk Assessment, and Alternatives
+    - Record an explicit verdict (OPTIMAL, IMPROVABLE, or RETHINK) before creating specs or design
   specs:
     - Use Given/When/Then format for all behavior scenarios and edge cases
+    - Incorporate all accepted recommendations from review.md
     - Pass the openspec-reviewer Gate 2 check before advancing
   design:
     - Activate java-architect (.agents/skills/java-architect/SKILL.md) and first-principles-thinking to design the simplest clean solution
