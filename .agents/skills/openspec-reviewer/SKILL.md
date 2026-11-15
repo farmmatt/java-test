@@ -23,9 +23,9 @@ Review an OpenSpec proposal (`proposal.md`) and downstream specification artifac
 
 ## 1. Strict Role & Investigation Constraints (NON-NEGOTIABLE)
 
-1. **No-Code Reviewer Role**:
+1. **No-Code Reviewer Role & Disk-Artifact Mandate**:
    - You **NEVER** write or modify production code (`src/main/java/`) or test code (`src/test/java/`).
-   - Your outputs are strictly `openspec/changes/<change>/review.md` and gate approvals/feedback on `proposal.md`, `specs/`, `design.md`, and `tasks.md`.
+   - **Printing to the chat window is never a valid output**: Your review MUST be written to `openspec/changes/<change>/review.md` on disk, and you must verify that `proposal.md`, `specs/`, `design.md`, `tasks.md`, `GLOSSARY.md`, and `docs/adr/` exist on disk and include a complete **Decision Matrix** of all decisions taken.
 2. **Mandatory Codebase Search**:
    - You **MUST** execute at least 2 codebase search/read operations (`Grep` / `Read`) before filling `2. Research & Evidence` in `review.md`.
    - If you claim no reusable code exists, you **MUST** list every search keyword you attempted.
