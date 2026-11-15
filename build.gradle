@@ -1,0 +1,45 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'com.example'
+version = '0.1.0-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+application {
+    mainClass = 'com.example.app.App'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation libs.slf4j.api
+    runtimeOnly libs.logback.classic
+
+    testImplementation platform(libs.junit.bom)
+    testImplementation libs.junit.jupiter
+    testRuntimeOnly libs.junit.platform.launcher
+    testImplementation libs.assertj.core
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs.addAll(['-Xlint:all', '-parameters'])
+}
+
+tasks.named('test', Test) {
+    useJUnitPlatform()
+    maxParallelForks = Math.max(1, Runtime.runtime.availableProcessors().intdiv(2))
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+        exceptionFormat = 'full'
+    }
+}

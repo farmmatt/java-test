@@ -1,0 +1,11 @@
+# Gradle build & local cache directories
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE & OS files
+.idea/
+*.iml
+.vscode/
+.DS_Store
+*.swp

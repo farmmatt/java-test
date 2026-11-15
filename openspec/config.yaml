@@ -1,0 +1,36 @@
+schema: spec-driven
+
+context: |
+  Tech stack: Java 21, Gradle 9 (Groovy DSL — no Kotlin, TOML Version Catalog in gradle/libs.versions.toml), SLF4J/Logback, JUnit 5, AssertJ
+  Architecture: Keep domain models framework-agnostic (domain/); place orchestration in service/; wire dependencies via constructor injection in config/; require unit tests for all new domain logic
+  AgentSkills.io Personas (.agents/skills/<name>/SKILL.md):
+    - java-architect (.agents/skills/java-architect/SKILL.md): Leads module/package architecture and design.md
+    - openspec-reviewer (.agents/skills/openspec-reviewer/SKILL.md): Reviews proposal.md, specs/, design.md, and tasks.md before coding begins
+    - java-expert (.agents/skills/java-expert/SKILL.md): Leads Java 21, Gradle Groovy DSL, TOML catalog, and JUnit 5 + AssertJ implementation
+    - code-review-expert (.agents/skills/code-review-expert/SKILL.md): Audits spec compliance, layer boundaries, and test coverage before archiving/merging
+    - readme-generator (.agents/skills/readme-generator/SKILL.md): Maintains README.md and package-info.java documentation
+    - git-workflow-manager (.agents/skills/git-workflow-manager/SKILL.md): Manages branching and Conventional Commits linked to OpenSpec changes
+    - cicd-expert (.agents/skills/cicd-expert/SKILL.md): Maintains CI/CD workflows and Gradle build caching
+  Conventions:
+    - Use constructor injection, Java 21 records for immutable DTOs/value objects, and clear domain naming
+    - Centralize all dependency and plugin versions in gradle/libs.versions.toml
+    - Use Groovy DSL (build.gradle & settings.gradle) exclusively — never Kotlin
+  Verification: Every new service, domain model, or endpoint requires JUnit 5 unit tests and integration tests verified via './gradlew check' (or 'gwcheck') and reviewed by code-review-expert
+
+rules:
+  proposal:
+    - Reference openspec/project.md and identify affected layers (config, domain, service)
+    - Pass the openspec-reviewer Gate 1 check before advancing
+  specs:
+    - Use Given/When/Then format for all behavior scenarios and edge cases
+    - Pass the openspec-reviewer Gate 2 check before advancing
+  design:
+    - Activate the java-architect skill (.agents/skills/java-architect/SKILL.md)
+    - Keep domain models framework-agnostic using Java 21 records and constructor injection
+    - Declare any new dependencies in gradle/libs.versions.toml
+    - Pass the openspec-reviewer Gate 3 check before advancing
+  tasks:
+    - Activate java-expert for implementation tasks, code-review-expert for verification, readme-generator for docs, and git-workflow-manager for commits
+    - Break work into atomic tasks that include JUnit 5 + AssertJ unit tests for all domain and service logic
+    - Pass the openspec-reviewer Gate 4 check before starting implementation
+    - End every task list with './gradlew check', a code-review-expert audit, and a readme-generator documentation sync

@@ -1,0 +1,14 @@
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.9.0'
+}
+
+rootProject.name = 'java-test'
+
+// Local Build Cache Configuration (Committed to Repo)
+buildCache {
+    local {
+        enabled = true
+        directory = new File(rootDir, '.gradle/build-cache')
+        removeUnusedEntriesAfterDays = 14
+    }
+}
