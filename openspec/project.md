@@ -7,8 +7,8 @@
 - **Logging**: SLF4J API (`org.slf4j:slf4j-api`) + Logback Classic (`ch.qos.logback:logback-classic`)
 - **Testing Framework**: JUnit 5 (`junit-jupiter`) + AssertJ (`assertj-core`)
 
-## 2. AgentSkills.io Personas (`.agents/skills/`)
-All project skills follow the agent-agnostic [agentskills.io](https://agentskills.io) `SKILL.md` frontmatter standard and can be customized directly within `.agents/skills/<name>/SKILL.md` in this repository:
+## 2. Personas & Skills (`.agents/skills/` — Formatted per Agent Skills Spec)
+Agents and skills can originate from any source or library, but must be formatted using the agent-agnostic [Agent Skills (`agentskills.io`)](https://agentskills.io/home) `SKILL.md` frontmatter specification. Default definitions are copied into `.agents/skills/<name>/SKILL.md` and can be customized directly within this repository:
 1. **`java-expert`** (`.agents/skills/java-expert/SKILL.md`) — Java 21, Gradle 9 Groovy DSL, TOML catalog, and JUnit 5 + AssertJ implementation specialist.
 2. **`java-architect`** (`.agents/skills/java-architect/SKILL.md`) — Clean/hexagonal architecture, DDD boundaries, and `design.md` lead.
 3. **`openspec-reviewer`** (`.agents/skills/openspec-reviewer/SKILL.md`) — Pre-implementation spec & design gate reviewer (`proposal.md` $\rightarrow$ `specs/` $\rightarrow$ `design.md` $\rightarrow$ `tasks.md`).

@@ -1,14 +1,14 @@
-# Project Agent Guidelines & AgentSkills.io Personas (`java-test`)
+# Project Agent Guidelines & Personas (`java-test`)
 
-This repository uses **Fission-AI/OpenSpec** (`openspec/config.yaml` & `openspec/project.md`) and agent-agnostic **AgentSkills.io (`https://agentskills.io`)** skills stored in `.agents/skills/<skill-name>/SKILL.md`.
+This repository uses **Fission-AI/OpenSpec** (`openspec/config.yaml` & `openspec/project.md`) along with personas and skills stored in `.agents/skills/<name>/SKILL.md`.
 
-> **Customizing Skills in This Repo**: These skills were seeded from the workspace `dotfiles` defaults and committed directly into `.agents/skills/`. You can freely modify any `.agents/skills/<skill-name>/SKILL.md` file in this repository to tailor its rules to this project; workspace-level `.agents/skills/` automatically override global dotfiles defaults.
+> **Format & Customizing Skills in This Repo**: Agents and skills can be sourced from anywhere (community libraries, team conventions, or custom definitions), provided they are formatted using the agent-agnostic [Agent Skills (`agentskills.io`)](https://agentskills.io/home) `<name>/SKILL.md` frontmatter specification. These default files were seeded from the workspace `dotfiles` and committed directly into `.agents/skills/` so you can freely modify them or add new ones inside this repository as needed.
 
 ---
 
-## Installed Project Skills & Personas (`.agents/skills/`)
+## Installed Project Personas & Skills (`.agents/skills/`)
 
-| Skill Name (`name`) | Path | Role & Activation Stage |
+| Name (`name`) | Path | Role & Activation Stage |
 | :--- | :--- | :--- |
 | **`java-expert`** | [.agents/skills/java-expert/SKILL.md](.agents/skills/java-expert/SKILL.md) | **Java Development Expert** — Implements Java 21 LTS code (`record`, `sealed`, virtual threads), Gradle 9 Groovy DSL (`build.gradle` — no Kotlin), `gradle/libs.versions.toml`, and JUnit 5 + AssertJ tests |
 | **`java-architect`** | [.agents/skills/java-architect/SKILL.md](.agents/skills/java-architect/SKILL.md) | **Java Architect** — Designs clean/hexagonal package boundaries (`config`, `domain`, `service`), DDD models, and OpenSpec `design.md` |
