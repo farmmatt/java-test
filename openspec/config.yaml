@@ -3,7 +3,8 @@ schema: spec-driven
 context: |
   Tech stack: Java 21, Gradle 9 (Groovy DSL — no Kotlin, TOML Version Catalog in gradle/libs.versions.toml), SLF4J/Logback, JUnit 5, AssertJ
   Architecture: Keep domain models framework-agnostic (domain/); place orchestration in service/; wire dependencies via constructor injection in config/; require unit tests for all new domain logic
-  AgentSkills.io Personas (.agents/skills/<name>/SKILL.md):
+  Personas & Skills (.agents/skills/<name>/SKILL.md — formatted per Agent Skills spec):
+    - first-principles-thinking (.agents/skills/first-principles-thinking/SKILL.md): Deconstructs problems to fundamental truths and challenges assumptions during proposal and design
     - java-architect (.agents/skills/java-architect/SKILL.md): Leads module/package architecture and design.md
     - openspec-reviewer (.agents/skills/openspec-reviewer/SKILL.md): Reviews proposal.md, specs/, design.md, and tasks.md before coding begins
     - java-expert (.agents/skills/java-expert/SKILL.md): Leads Java 21, Gradle Groovy DSL, TOML catalog, and JUnit 5 + AssertJ implementation
@@ -19,13 +20,14 @@ context: |
 
 rules:
   proposal:
+    - Activate first-principles-thinking (.agents/skills/first-principles-thinking/SKILL.md) to challenge assumptions and isolate fundamental domain truths
     - Reference openspec/project.md and identify affected layers (config, domain, service)
     - Pass the openspec-reviewer Gate 1 check before advancing
   specs:
     - Use Given/When/Then format for all behavior scenarios and edge cases
     - Pass the openspec-reviewer Gate 2 check before advancing
   design:
-    - Activate the java-architect skill (.agents/skills/java-architect/SKILL.md)
+    - Activate java-architect (.agents/skills/java-architect/SKILL.md) and first-principles-thinking to design the simplest clean solution
     - Keep domain models framework-agnostic using Java 21 records and constructor injection
     - Declare any new dependencies in gradle/libs.versions.toml
     - Pass the openspec-reviewer Gate 3 check before advancing

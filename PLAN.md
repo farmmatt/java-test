@@ -12,6 +12,7 @@ Agents and skills can come from **any source** (community repositories such as `
 
 | # | Name (`name`) | Template Path | Source & Role |
 | :--- | :--- | :--- | :--- |
+| **0** | `first-principles-thinking` | `templates/common/skills/first-principles-thinking/SKILL.md` | **First-Principles Thinking Expert** (sourced from `VoltAgent/awesome-claude-code-subagents`): Deconstructs problems to fundamental truths, challenges assumptions, and rebuilds solutions from scratch during `proposal.md` and `design.md` |
 | **1** | `java-expert` | `templates/languages/java/skills/java-expert/SKILL.md` | **Java Development Expert** (sourced from `proflead/claude-code-agent-library`): Java 21 LTS (`record`, `sealed`, virtual threads), Gradle 9 Groovy DSL (`build.gradle` — no Kotlin), `gradle/libs.versions.toml`, SLF4J/Logback, JUnit 5 + AssertJ |
 | **1.1** | `java-architect` | `templates/languages/java/skills/java-architect/SKILL.md` | **Java Architect** (sourced from `VoltAgent/awesome-claude-code-subagents`): Clean/hexagonal layering (`config`, `domain`, `service`), DDD boundaries, concurrency/resilience, and OpenSpec `design.md` |
 | **2** | `code-review-expert` | `templates/common/skills/code-review-expert/SKILL.md` | **Code Review Expert**: 5-pillar post-implementation audit (OpenSpec scenario matrix, `domain/` purity, Java 21 & Gradle/TOML hygiene, JUnit 5 edge-case coverage, security) |
@@ -28,6 +29,7 @@ Agents and skills can come from **any source** (community repositories such as `
 my-java-service/
 ├── .agents/
 │   └── skills/                         # Agent-agnostic personas & skills (formatted per agentskills.io, modifiable per build repo)
+│       ├── first-principles-thinking/SKILL.md
 │       ├── java-expert/SKILL.md
 │       ├── java-architect/SKILL.md
 │       ├── code-review-expert/SKILL.md

@@ -10,6 +10,7 @@ This repository uses **Fission-AI/OpenSpec** (`openspec/config.yaml` & `openspec
 
 | Name (`name`) | Path | Role & Activation Stage |
 | :--- | :--- | :--- |
+| **`first-principles-thinking`** | [.agents/skills/first-principles-thinking/SKILL.md](.agents/skills/first-principles-thinking/SKILL.md) | **First-Principles Thinking Expert** — Challenges assumptions, isolates fundamental truths, and rebuilds solutions from the ground up during `proposal.md` and `design.md` |
 | **`java-expert`** | [.agents/skills/java-expert/SKILL.md](.agents/skills/java-expert/SKILL.md) | **Java Development Expert** — Implements Java 21 LTS code (`record`, `sealed`, virtual threads), Gradle 9 Groovy DSL (`build.gradle` — no Kotlin), `gradle/libs.versions.toml`, and JUnit 5 + AssertJ tests |
 | **`java-architect`** | [.agents/skills/java-architect/SKILL.md](.agents/skills/java-architect/SKILL.md) | **Java Architect** — Designs clean/hexagonal package boundaries (`config`, `domain`, `service`), DDD models, and OpenSpec `design.md` |
 | **`openspec-reviewer`** | [.agents/skills/openspec-reviewer/SKILL.md](.agents/skills/openspec-reviewer/SKILL.md) | **Spec & Design Reviewer** — Enforces pre-implementation review gates across `proposal.md`, `specs/`, `design.md`, and `tasks.md` |
