@@ -148,15 +148,20 @@ Break the approved specification into `openspec/changes/<change-id>/tasks.md`.
   2. **Migrate**: Move callers over in bounded batches, keeping all tests green.
   3. **Contract**: Remove the deprecated interface once zero callers remain.
 
-### 4.2 Unambiguous Task Structure (`obra/writing-plans`)
-Write each task in `openspec/changes/<change-id>/tasks.md` so an engineer with a fresh context window can implement it with zero guesswork, while **never writing the implementation bodies for them**:
+### 4.2 Unambiguous Task & Trackable Delivery Structure (`obra/writing-plans`)
+Write `openspec/changes/<change-id>/tasks.md` so every vertical slice is a **Trackable Delivery (`D1`..`Dn`)** with a **Master Trackable Delivery Matrix** at the top of the file and an engineer with a fresh context window can implement each delivery with zero guesswork (while **never writing the implementation bodies for them**). As each delivery is completed, the developer agent MUST update its checkboxes (`[x]`), `Status` (`DELIVERED`), and `Commit SHA` in `tasks.md`:
 
 ```markdown
-# Implementation Plan (`tasks.md`): <Change Title>
+# Trackable TDD Delivery Plan (`tasks.md`): <Change Title>
 
 **Goal:** [One sentence describing what this builds]
 **Spec:** `openspec/changes/<change-id>/proposal.md` & `specs/`
-**Design:** `openspec/changes/<change-id>/design.md`
+**Design & ADR:** `openspec/changes/<change-id>/design.md` & `docs/adr/0001-...md`
+
+## 1. Master Trackable Delivery Matrix (`D1` – `Dn`)
+| Delivery ID | Deliverable Name | Spec Reqs & ADR Decisions | Production Artifacts | Test Artifacts (State-Based) | Verification & Review Gate | Target Commit Message | Status | Commit SHA |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **D1** | [Slice 1 Name] | Req X, `DEC-01` | `ClassA.java` | `ClassATest.java` | `./gradlew test` + `code-review-expert` | `feat(scope): deliver D1 ... [changes/<change-id>:D1]` | `PENDING` | `—` |
 
 ## Global Constraints
 - Java 21 toolchain (`Eclipse Temurin 21`), Gradle 9.0.0 Groovy DSL (`build.gradle`, `settings.gradle`, `gradle/libs.versions.toml` — zero Kotlin).
@@ -164,31 +169,32 @@ Write each task in `openspec/changes/<change-id>/tasks.md` so an engineer with a
 - Pre-Agreed Test Seams only; zero speculative interfaces or mocking of internal collaborators.
 
 ## Review Focus (Mandatory Edge-Case Coverage)
-1. [Input class / failure mode 1 -> Pinned in Task X]
-2. [Input class / failure mode 2 -> Pinned in Task Y]
-3. [Input class / failure mode 3 -> Pinned in Task Z]
-4. [Input class / failure mode 4 -> Pinned in Task W]
-5. [Input class / failure mode 5 -> Pinned in Task V]
+1. [Input class / failure mode 1 -> Pinned in Delivery D1]
+2. [Input class / failure mode 2 -> Pinned in Delivery D2]
+3. [Input class / failure mode 3 -> Pinned in Delivery D3]
+4. [Input class / failure mode 4 -> Pinned in Delivery D4]
+5. [Input class / failure mode 5 -> Pinned in Delivery D5]
 
 ---
 
-### Task 1: [Vertical Slice Name] (`P0`)
+### Delivery D1: [Vertical Slice Name] (`P0`)
+- **Status:** `PENDING`
 - **Blocked by:** None (Frontier Ready)
-- **Demoable Behavior:** [What observable behavior works end-to-end when this task completes]
+- **Demoable Behavior:** [What observable behavior works end-to-end when this delivery completes]
 - **Pre-Agreed Seam:** `[package.ClassName#methodName]`
 - **Files:**
   - Create/Modify: `src/main/java/...`
   - Test: `src/test/java/...`
 - **Interfaces:**
-  - *Consumes:* `[exact signatures from existing modules or earlier tasks]`
-  - *Produces:* `[exact method/record signatures later tasks rely on]`
+  - *Consumes:* `[exact signatures from existing modules or earlier deliveries]`
+  - *Produces:* `[exact method/record signatures later deliveries rely on]`
 
-- [ ] **Step 1 (RED):** Write failing JUnit 5 + AssertJ test at `[Seam]` covering `Scenario: [Name]` (and Review Focus item #[N]).
-- [ ] **Step 2 (Verify RED):** Run `./gradlew test --tests "[TestClass].[testMethod]" --info` and confirm it fails for the expected behavioral reason (not a compile error).
-- [ ] **Step 3 (GREEN):** Implement minimal production code in `[File]` to satisfy the scenario.
-- [ ] **Step 4 (Verify GREEN + Mutation Check):** Run `./gradlew check --build-cache --parallel` (0 failures) and verify breaking the production condition turns the test red.
-- [ ] **Step 5 (Two-Axis Code Review & Refactor Loop):** Run `code-review-expert` (read-only) -> feed refactoring recommendations back to `java-expert` -> re-run `./gradlew check`.
-- [ ] **Step 6 (Commit):** Commit vertical slice with Conventional Commit referencing `(<change-id>)`.
+- [ ] **D1.1 (RED):** Write failing JUnit 5 + AssertJ test at `[Seam]` covering `Scenario: [Name]` (and Review Focus item #[N]).
+- [ ] **D1.2 (Verify RED):** Run `./gradlew test --tests "[TestClass].[testMethod]" --info` and confirm it fails for the expected behavioral reason (not a compile error).
+- [ ] **D1.3 (GREEN):** Implement minimal production code in `[File]` to satisfy the scenario.
+- [ ] **D1.4 (Verify GREEN + Mutation Check):** Run `./gradlew check --build-cache --parallel` (0 failures) and verify breaking the production condition turns the test red.
+- [ ] **D1.5 (Two-Axis Code Review & Refactor Loop):** Run `code-review-expert` (read-only) -> feed refactoring recommendations back to `java-expert` -> re-run `./gradlew check`.
+- [ ] **D1.6 (Commit & Record SHA):** Commit vertical delivery with Conventional Commit referencing `[changes/<change-id>:D1]` and record the commit SHA in the Master Trackable Delivery Matrix above.
 ```
 
 ---
