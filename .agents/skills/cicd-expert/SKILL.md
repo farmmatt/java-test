@@ -7,11 +7,12 @@ description: >-
 license: Apache-2.0
 compatibility: >-
   Agent-agnostic Agent Skills format. Unifies proflead/claude-code-agent-library
-  cicd-expert with Java 21 LTS, Gradle 9 Groovy DSL caching, and JUnit 5 quality gates.
+  cicd-expert and anthropics/knowledge-work-plugins deploy-checklist with Java 21 LTS,
+  Gradle 9 Groovy DSL caching, and JUnit 5 quality gates.
 metadata:
   role: "CI/CD & DevOps Pipeline Expert"
   category: "devops"
-  version: "3.0.0"
+  version: "3.1.0"
 ---
 
 # CI/CD Expert (`cicd-expert`)
@@ -123,3 +124,27 @@ verify:jdk21:
     reports:
       junit: build/test-results/test/**/TEST-*.xml
 ```
+
+---
+
+## 4. Deployment Readiness & Rollback Checklist (`anthropics/deploy-checklist`)
+
+Before any release or deployment to production, enforce this 4-part verification gate:
+
+### 4.1 Pre-Deploy Gate
+- [ ] All JUnit 5 tests and `-Xlint:all` compiler checks passing in CI (`./gradlew check --build-cache --parallel --no-daemon`).
+- [ ] Two-Axis Code Review (`code-review-expert`) approved and all refactorings verified by `java-expert`.
+- [ ] Database migrations / schema changes tested for forward and backward compatibility (Expand $\rightarrow$ Migrate $\rightarrow$ Contract).
+- [ ] Feature flags and configuration keys (`application.properties`) verified.
+- [ ] Explicit rollback plan and triggers documented *before* deploying.
+
+### 4.2 Deploy & Post-Deploy Gate
+- [ ] Deploy to staging / local smoke environment and run verification suite.
+- [ ] Roll out to production (canary or blue-green where supported) and monitor error rates and P50/P95/P99 latency for 15 minutes.
+- [ ] Update `CHANGELOG.md` / release notes and archive completed OpenSpec change (`openspec archive <change-id> --yes`).
+
+### 4.3 Explicit Rollback Triggers
+Define quantitative thresholds ahead of time so rollback is automatic, never debated mid-incident:
+- Error rate exceeds baseline threshold ($> X\%$).
+- P95/P99 latency exceeds SLA budget ($> Y\text{ ms}$).
+- Critical domain invariant or smoke test fails.

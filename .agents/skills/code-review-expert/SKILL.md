@@ -8,12 +8,12 @@ description: >-
 license: Apache-2.0
 compatibility: >-
   Agent-agnostic Agent Skills format. Unifies VoltAgent code-reviewer, proflead
-  code-reviewer, and mattpocock/skills code-review (Two-Axis Review & 12-item Fowler
-  Code Smell Baseline).
+  code-reviewer, mattpocock/skills code-review (Two-Axis Review & 12-item Fowler
+  Code Smell Baseline), and anthropics/knowledge-work-plugins code-review & tech-debt.
 metadata:
-  role: "Senior Code Review & Refactoring Advisor (Strictly Read-Only)"
+  role: "Senior Code Review, Refactoring & Tech-Debt Advisor (Strictly Read-Only)"
   category: "quality-security"
-  version: "3.0.0"
+  version: "3.1.0"
 ---
 
 # Code Review & Refactoring Expert (`code-review-expert`)
@@ -85,6 +85,19 @@ Inspect every hunk of the diff against these 12 code smells (_Refactoring_, ch. 
 10. **Message Chains**: Long `a.getB().getC().getD()` navigation chains $\rightarrow$ *Recommend hiding the navigation behind a single intention-revealing method.*
 11. **Middle Man**: A shallow class or method that only delegates straight through to another object $\rightarrow$ *Recommend deleting the pass-through (The Deletion Test) and calling the deep module directly.*
 12. **Refused Bequest**: An implementer or subclass that throws `UnsupportedOperationException` or ignores most of its interface $\rightarrow$ *Recommend replacing inheritance with composition or narrowing the port interface.*
+
+### 3.5 Axis 2D: Technical Debt Classification & Prioritization (`anthropics/tech-debt`)
+When auditing code health or prioritizing refactoring work, classify debt across six categories and score priority deterministically:
+- **6 Debt Categories**:
+  1. **Code Debt**: Duplicated logic, shallow abstractions, magic numbers/strings.
+  2. **Architecture Debt**: Leaky module boundaries, missing seams, wrong storage/concurrency model.
+  3. **Test Debt**: Missing boundary coverage, flaky timing guesses, implementation-coupled mocks.
+  4. **Dependency Debt**: Outdated or vulnerable libraries, hardcoded versions bypassing `gradle/libs.versions.toml`.
+  5. **Documentation Debt**: Outdated `README.md`, missing `package-info.java` or `GLOSSARY.md` drift.
+  6. **Infrastructure / Build Debt**: Uncached tasks, compiler warnings, missing CI gates.
+- **Prioritization Formula**:
+  $$\text{Priority Score} = (\text{Impact}_{1..5} + \text{Risk}_{1..5}) \times (6 - \text{Effort}_{1..5})$$
+  Order refactoring recommendations for `java-expert` from highest Priority Score to lowest.
 
 ---
 

@@ -7,11 +7,12 @@ description: >-
 license: Apache-2.0
 compatibility: >-
   Agent-agnostic Agent Skills format. Unifies VoltAgent/awesome-claude-code-subagents
-  readme-generator for any Git repository and Java 21 + Gradle 9 + OpenSpec stack.
+  readme-generator and anthropics/knowledge-work-plugins documentation for any Git
+  repository and Java 21 + Gradle 9 + OpenSpec stack.
 metadata:
   role: "Senior Developer Experience Advocate & Zero-Hallucination Documenter"
   category: "developer-experience"
-  version: "3.0.0"
+  version: "3.1.0"
 ---
 
 # README Generator & Documenter (`readme-generator`)
@@ -65,3 +66,15 @@ You perform ultradetailed examinations of the repository by reading source files
 ### Phase 3: Verification Gate
 1. Confirm every documented command and file path exists in the repository.
 2. Stage, commit, or push **only** when explicitly instructed by the user or the active `tasks.md` pipeline.
+
+---
+
+## 3. Five Technical Document Archetypes (`anthropics/documentation`)
+
+Apply these five core principles (**Write for the reader**, **Start with the most useful information**, **Show don't tell**, **Keep it current**, **Link don't duplicate**) across all five technical documentation types:
+
+1. **README (`README.md`)**: What this is and why it exists, Quick Start ($< 5$ minutes to first green `./gradlew check`), Architecture & Directory Tree, Configuration & Usage, and Spec-Driven TDD Contributing Guide.
+2. **API & Seam Documentation (`package-info.java` & Javadoc)**: Public module interface contracts, input/output examples, invariants, error modes, and threading/performance guarantees.
+3. **Operational Runbook**: When to use, prerequisites, step-by-step verification and remediation commands, explicit rollback steps, and escalation path.
+4. **Architecture Doc (`openspec/project.md`, `design.md`, `docs/adr/`)**: Context and goals, high-level Mermaid diagrams, key decisions and trade-offs, data flow, and pre-agreed test seams.
+5. **Onboarding Guide**: User-space toolchain setup (`Eclipse Temurin JDK 21` + `Gradle 9.0.0`), key modules (`config`, `domain`, `service`), and common developer workflows (`gwcheck`, `gwtest`, `gwij`).

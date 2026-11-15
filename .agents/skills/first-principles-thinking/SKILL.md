@@ -9,11 +9,12 @@ description: >-
 license: Apache-2.0
 compatibility: >-
   Agent-agnostic Agent Skills format. Unifies VoltAgent/awesome-claude-code-subagents
-  first-principles-thinking for research, OpenSpec proposal, and design deconstruction.
+  first-principles-thinking and anthropics/knowledge-work-plugins product-brainstorming
+  for research, OpenSpec proposal, and design deconstruction.
 metadata:
   role: "First-Principles Strategic Thinker & Problem Deconstructor (No-Code Role)"
   category: "research-analysis"
-  version: "3.0.0"
+  version: "3.1.0"
 ---
 
 # First-Principles Thinking (`first-principles-thinking`)
@@ -117,14 +118,35 @@ Evaluate each candidate option across four criteria:
 
 ---
 
-## 5. Mandatory Output Format
+## 5. Brainstorming Modes & Ideation Frameworks (Unified from `anthropics/product-brainstorming`)
+
+Adapt your sparring mode to where the engineering or product problem currently sits:
+
+### 5.1 Four Sparring Modes
+- **Problem Exploration**: Ask *"Who has this problem and what are they doing about it today?"*, *"What happens if we do nothing?"*, and *"What would need to be true for this problem not to exist?"* Separate symptoms from structural root causes.
+- **Solution Ideation**: Generate 5–7 distinct approaches before evaluating any. Include at least one **"what if we did the opposite?"** option and at least one **subtraction option** (removing a module/feature rather than adding one). Use **Constraint Removal**, **Cross-Domain Analogies**, and **Inversion**.
+- **Assumption Testing**: Probe across 6 categories (**User**, **Problem**, **Solution**, **Business**, **Feasibility**, **Adoption**). Identify the **single riskiest assumption** that kills the design if wrong, and design the cheapest spike/test to falsify it first.
+- **Strategy Exploration**: Map second-order effects (*"If we build X, what does that enable or foreclose in 3, 12, and 36 months?"*).
+
+### 5.2 Structured Thinking Toolkits
+- **How Might We (HMW)**: *"How might we [desired outcome] for [caller/user] without [constraint]?"*
+- **Jobs-to-be-Done (JTBD)**: *"When [situation], I want to [motivation] so I can [expected outcome]."*
+- **Opportunity Solution Trees**: Map `Desired Outcome -> Opportunities (evidence-backed pain points) -> Multiple Solutions -> Cheapest Experiments`.
+- **SCAMPER Lenses**: **S**ubstitute, **C**ombine, **A**dapt, **M**odify ($10\times$ larger/smaller/faster), **P**ut to other use, **E**liminate, **R**everse.
+- **OODA Loop (`Observe -> Orient -> Decide -> Act`)**: When analysis paralysis sets in, favor decision tempo with reversible two-way-door experiments.
+- **Reverse Brainstorming**: Ask *"How could we make this system as brittle, slow, or confusing as possible?"*, list every failure mechanism, and invert each into a design invariant.
+- **Session Rhythm**: `1. Frame -> 2. Diverge -> 3. Provoke -> 4. Converge -> 5. Capture`.
+
+---
+
+## 6. Mandatory Output Format
 
 Deliver every First-Principles analysis in this exact 5-part structure:
 
 1. **Problem Restated in First-Principles Language** (stripped of solution framing)
 2. **Challenged Assumptions Table**:
-   | Assumption | Verdict (`Valid` / `Invalid` / `Partially Valid`) | Evidence & Reasoning |
-   | :--- | :--- | :--- |
+   | Assumption | Category (`Tech`/`Arch`/`Process`/`User`) | Verdict (`Valid` / `Invalid` / `Partially Valid`) | Evidence & Cheapest Falsification Test |
+   | :--- | :--- | :--- | :--- |
 3. **Fundamental Truths & Irreducible Domain Invariants Identified**
-4. **2–3 Rebuilt Solution Directions with Trade-Off Matrix** (`Impact`, `Effort`, `Risk`, `Reversibility`, including "Do Nothing / Simplify")
-5. **Recommended Next Step & Seam Hypothesis** (feeding directly into `openspec/changes/<change>/proposal.md` and `design.md`)
+4. **2–3 Rebuilt Solution Directions with Trade-Off Matrix** (`Impact`, `Effort`, `Risk`, `Reversibility`, including "Do Nothing / Subtract")
+5. **Recommended Next Step & Seam Hypothesis** (feeding directly into `spec-builder` and `system-design`)

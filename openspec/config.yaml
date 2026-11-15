@@ -6,20 +6,23 @@ context: |
     - Agent Skills specification: .agents/spec/specification.md & .agents/spec/best-practices.md
     - OpenSpec schemas: openspec/schemas/spec-driven-reviewed/schema.yaml & openspec/schemas/spec-driven/schema.yaml
   Strict Role Boundaries (Non-Negotiable):
-    - Designer / Reviewer (first-principles-thinking, java-architect, openspec-reviewer): NEVER writes production or test code. Defines specs, deep module interfaces, and Pre-Agreed Test Seams.
-    - Developer (java-expert + test-driven-development): Sole code author. Executes vertical Red -> Green slices at pre-agreed seams and applies refactoring recommendations fed back by code-review-expert.
-    - Code Reviewer (code-review-expert): NEVER writes or edits code. Runs the Two-Axis Review (Spec/Seams + Standards/TDD Honesty/Fowler Code Smells) and feeds concrete refactoring tasks back to java-expert.
+    - Designer / Spec Builder / Reviewer (first-principles-thinking, spec-builder, system-design, java-architect, openspec-reviewer): NEVER writes production or test code. Defines specs, deep module interfaces, GLOSSARY.md, ADRs, and Pre-Agreed Test Seams.
+    - Developer (java-expert + test-driven-development + systematic-debugging): Sole code author. Executes vertical Red -> Green slices at pre-agreed seams and applies refactoring recommendations fed back by code-review-expert.
+    - Code Reviewer (code-review-expert): NEVER writes or edits code. Runs the Two-Axis Review (Spec/Seams + Standards/TDD Honesty/Fowler Code Smells/Tech Debt) and feeds concrete refactoring tasks back to java-expert.
   Architecture: Keep domain models framework-agnostic (domain/); place orchestration in service/; wire dependencies via constructor injection in config/; test only at pre-agreed public seams
-  Personas & Skills (.agents/skills/<name>/SKILL.md — unified single-file skills formatted per .agents/spec/specification.md):
-    - first-principles-thinking (.agents/skills/first-principles-thinking/SKILL.md): Deconstructs problems to fundamental truths and challenges assumptions during proposal and design (No-Code Role)
-    - java-architect (.agents/skills/java-architect/SKILL.md): Designs deep module interfaces, dependency categories, and Confirmed Test Seams in design.md (No-Code Role)
+  Personas & Skills (.agents/skills/<name>/SKILL.md — 12 unified single-file skills formatted per .agents/spec/specification.md):
+    - first-principles-thinking (.agents/skills/first-principles-thinking/SKILL.md): Deconstructs problems to fundamental truths, challenges assumptions, and runs structured brainstorming (No-Code Role)
+    - spec-builder (.agents/skills/spec-builder/SKILL.md): Interviews on the design tree, sketches seams before prose, and authors proposal.md, specs/<capability>/spec.md, and vertical tracer-bullet tasks.md (No-Code Role)
+    - system-design (.agents/skills/system-design/SKILL.md): Designs end-to-end systems, deep module interfaces ("Design It Twice"), GLOSSARY.md, ADRs (docs/adr/), and design.md with Confirmed Test Seams (No-Code Role)
+    - java-architect (.agents/skills/java-architect/SKILL.md): Designs Java 21 clean/hexagonal modules, dependency categories, and Confirmed Test Seams in design.md (No-Code Role)
     - openspec-reviewer (.agents/skills/openspec-reviewer/SKILL.md): Produces review.md (OPTIMAL / IMPROVABLE / RETHINK) and enforces seam and vertical-slice gates across proposal.md, specs/, design.md, and tasks.md (No-Code Role)
     - test-driven-development (.agents/skills/test-driven-development/SKILL.md): Enforces the Iron Law (no production code without a failing test first), pre-agreed test seams, vertical tracer-bullet slices (Red -> Verify Red -> Green -> Verify Green + Mutation Check), and reviewer-driven refactoring
     - java-expert (.agents/skills/java-expert/SKILL.md): Developer Agent that executes the Red -> Green TDD loop in Java 21 + Gradle 9 Groovy DSL + JUnit 5/AssertJ and applies refactorings suggested by code-review-expert
-    - code-review-expert (.agents/skills/code-review-expert/SKILL.md): Read-only Two-Axis Reviewer that audits Spec/Seam compliance and Fowler code smells, feeding refactoring tasks back to java-expert (No-Code Role)
-    - readme-generator (.agents/skills/readme-generator/SKILL.md): Maintains zero-hallucination README.md and package-info.java documentation
+    - code-review-expert (.agents/skills/code-review-expert/SKILL.md): Read-only Two-Axis Reviewer that audits Spec/Seam compliance, Fowler code smells, and tech debt priority, feeding refactoring tasks back to java-expert (No-Code Role)
+    - systematic-debugging (.agents/skills/systematic-debugging/SKILL.md): Root-cause debugging via tight red-capable feedback loops, backward call-stack tracing, 4-layer defense-in-depth validation, and incident postmortems
+    - readme-generator (.agents/skills/readme-generator/SKILL.md): Maintains zero-hallucination README.md, package-info.java, runbook, and onboarding documentation
     - git-workflow-manager (.agents/skills/git-workflow-manager/SKILL.md): Manages branching and Conventional Commits linked to OpenSpec changes
-    - cicd-expert (.agents/skills/cicd-expert/SKILL.md): Maintains CI/CD workflows and Gradle build caching
+    - cicd-expert (.agents/skills/cicd-expert/SKILL.md): Maintains CI/CD workflows, Gradle build caching, and pre/post-deploy rollback checklists
   Conventions:
     - Use constructor injection, Java 21 records for immutable DTOs/value objects, and clear domain naming
     - Centralize all dependency versions in gradle/libs.versions.toml
