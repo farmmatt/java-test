@@ -1,127 +1,165 @@
 # Capability Specification: Falling Bricks Game (`falling-bricks`)
 
-- **Change ID**: `falling-bricks-game`
-- **Glossary**: [GLOSSARY.md](../../../../../GLOSSARY.md)
-- **Decision Matrix**: [ADR-0001](../../../../../docs/adr/0001-falling-bricks-architecture-and-decision-matrix.md)
+- **OpenSpec Change**: `falling-bricks-game`
+- **ADR Reference**: `docs/adr/0001-falling-bricks-architecture-and-decision-matrix.md`
+- **Ubiquitous Language**: `GLOSSARY.md`
 
 ---
 
 ## ADDED Requirements
 
-### Requirement 1: Grid Dimensions & Coordinate System Validation (`DEC-02`)
-The system SHALL represent the playing field as a 2D `Grid` with validated `GridDimensions(width, height)` where `width` MUST be between `3` and `20` inclusive (`3 <= width <= 20`) and `height` MUST be between `3` and `30` inclusive (`3 <= height <= 30`). Row `0` SHALL represent the bottom floor of the grid, and column `0` SHALL represent the leftmost column. Any attempt to construct or parse undersized (`< 3`) or oversized (`> 20` width or `> 30` height) grid dimensions MUST be caught and reported with `ValidationErrorCode.GRID_DIMENSIONS_OUT_OF_BOUNDS`.
+### Requirement 1: Configurable Parameters, Grid Bounds & Defensive State Encapsulation (`Q5`)
+The system SHALL configure game parameters via an immutable `GameConfiguration` value object loaded from defaults, an optional `InputStream`/`Properties` stream (`application.properties`), and optional CLI flag overrides (`--width`, `--height`, `--max-width`, `--max-height`, `--bricks`, `--seed`, `--tick-ms`, `--symbols`) with zero hardcoded file paths.
+The system SHALL represent the playing field as an immutable `Grid` value object with configurable `width` and `height`.
+- Negative or zero grid bounds SHALL NEVER be allowed (`ValidationErrorCode.GRID_TOO_SMALL`).
+- Minimum grid dimensions SHALL fit the largest configured brick (`minWidth >= maxBrickSpan` [3] and `minHeight >= maxBrickSpan` [3]; otherwise `ValidationErrorCode.GRID_TOO_SMALL`).
+- Maximum grid dimensions SHALL be configurable (`maxWidth`, `maxHeight`) and SHALL default to `20 x 20` (`width <= maxWidth` and `height <= maxHeight`; otherwise `ValidationErrorCode.GRID_TOO_LARGE`).
+- `Grid` SHALL never expose mutable internal arrays or collections; any snapshot of grid cells SHALL be a defensive copy.
 
-#### Scenario 1.1: Valid Grid Dimensions Accepted
-- **GIVEN** a dimension specification of `width = 6` and `height = 8`
-- **WHEN** `GameInputParser.parseDimensions("6x8")` (or `GridDimensions` validation) is invoked
-- **THEN** it returns `ValidationResult.Valid(GridDimensions(6, 8))` and an empty `Grid` of `6` columns by `8` rows where every cell `(row, col)` is `Optional.empty()`
+#### Scenario 1.1: Create Valid Grid Within Configurable Bounds
+- **GIVEN** a `GameConfiguration` with default `maxWidth = 20`, `maxHeight = 20`, and `maxBrickSpan = 3`
+- **WHEN** `Grid.create(6, 12)` or `Grid.create(20, 20)` is invoked
+- **THEN** the result SHALL be `ValidationResult.Valid<Grid>` with all cells initialized to empty (`Optional.empty()`).
 
-#### Scenario 1.2: Undersized Grid Rejected
-- **GIVEN** a dimension specification of `width = 2` and `height = 8` (cannot fit a 3-block horizontal brick) or negative/zero values (`0x5`, `-3x6`)
-- **WHEN** `GameInputParser.parseDimensions` is invoked
-- **THEN** it returns `ValidationResult.Invalid` with error code `GRID_DIMENSIONS_OUT_OF_BOUNDS` and a descriptive message stating the allowed range (`3..20 x 3..30`)
+#### Scenario 1.2: Reject Negative, Zero, or Undersized Grid Dimensions (`< Largest Brick`)
+- **GIVEN** largest configured brick span `maxBrickSpan = 3`
+- **WHEN** `Grid.create(width, height)` is invoked with `width <= 0`, `height <= 0`, `width < 3`, or `height < 3` (e.g., `Grid.create(-5, 10)`, `Grid.create(0, 10)`, or `Grid.create(2, 10)`)
+- **THEN** the result SHALL be `ValidationResult.Invalid` with error code `ValidationErrorCode.GRID_TOO_SMALL`.
 
-#### Scenario 1.3: Oversized Grid Rejected
-- **GIVEN** a dimension specification of `width = 25` and `height = 40`
-- **WHEN** `GameInputParser.parseDimensions("25x40")` is invoked
-- **THEN** it returns `ValidationResult.Invalid` with error code `GRID_DIMENSIONS_OUT_OF_BOUNDS`
+#### Scenario 1.3: Reject Oversized Grid Dimensions Beyond Configurable Max (`Default 20x20`)
+- **GIVEN** a `GameConfiguration` with default `maxWidth = 20` and `maxHeight = 20`
+- **WHEN** `GameConfiguration.validate(...)` or `Grid.create(width, height, maxWidth, maxHeight)` is invoked with `width = 21, height = 12` or `width = 6, height = 25`
+- **THEN** the result SHALL be `ValidationResult.Invalid` with error code `ValidationErrorCode.GRID_TOO_LARGE`.
 
----
+#### Scenario 1.4: Support Custom Configured Maximum Grid Size
+- **GIVEN** a `GameConfiguration` with custom `maxWidth = 30` and `maxHeight = 30`
+- **WHEN** a grid of `width = 25, height = 25` is validated
+- **THEN** the result SHALL be `ValidationResult.Valid`.
 
-### Requirement 2: Immutable 3-Block Bricks, Symbol Validation & Defensive Copying (`DEC-03`)
-The system SHALL represent every `Block` as an immutable value object containing a single validated `Symbol` from `AllowedSymbolSet` (default printable symbols: `@, #, $, %, &, *, +, =, ?` and `A–Z`, `0–9`, strictly excluding whitespace and control characters). Every `Brick` SHALL be an immutable value object (`record`) containing an unmodifiable `List<Block>` of **exact size 3** (`List.copyOf`) and a non-null `Orientation` (`HORIZONTAL` or `VERTICAL`). Empty inputs, wrong block counts ($\ne 3$), invalid symbols, or invalid orientations MUST be caught and reported.
-
-#### Scenario 2.1: Valid Horizontal and Vertical Bricks Parsed
-- **GIVEN** the default `AllowedSymbolSet`
-- **WHEN** `GameInputParser.parseBrick("@#* H")` and `GameInputParser.parseBrick("$$% V")` are invoked
-- **THEN** they return `ValidationResult.Valid` with a `HORIZONTAL` `Brick([@, #, *])` and a `VERTICAL` `Brick([$, $, %])` respectively
-
-#### Scenario 2.2: Mutating Input List Does Not Mutate Brick (Defensive Copy)
-- **GIVEN** a mutable `ArrayList<Block>` containing `[Block('@'), Block('#'), Block('*')]` used to construct a `Brick`
-- **WHEN** the caller mutates the original `ArrayList` after construction or attempts `brick.blocks().clear()`
-- **THEN** the `Brick` retains `[Block('@'), Block('#'), Block('*')]` unchanged and `brick.blocks().clear()` throws `UnsupportedOperationException`
-
-#### Scenario 2.3: Empty, Wrong-Length, Invalid-Symbol, or Invalid-Orientation Brick Rejected
-- **GIVEN** malformed brick specifications `""`, `"   "`, `"@@ H"` (2 blocks), `"@@@@ V"` (4 blocks), `"@ ~ H"` (disallowed/whitespace symbol), or `"@#* DIAGONAL"` (invalid orientation)
-- **WHEN** `GameInputParser.parseBrick` is invoked for each
-- **THEN** each returns `ValidationResult.Invalid` with the corresponding error code (`EMPTY_INPUT`, `INVALID_BRICK_LENGTH`, `INVALID_SYMBOL`, or `INVALID_ORIENTATION`)
+#### Scenario 1.5: Defensive Copy of Grid State
+- **GIVEN** a valid `Grid` containing placed blocks
+- **WHEN** a caller obtains `grid.cellsSnapshot()` and mutates the returned 2D array or list
+- **THEN** the internal state of the original `Grid` instance SHALL remain completely unmodified.
 
 ---
 
-### Requirement 3: Active Brick Spawn & Command Validation (`DEC-01`, `DEC-04`, `DEC-08`)
-The system SHALL spawn each `Brick` from the session's brick queue at the top of the `Grid` centered horizontally at column `col = (width - span) / 2` (where `span = 3` for `HORIZONTAL` and `span = 1` for `VERTICAL`). The system SHALL parse and execute simple commands:
-- `L` or `LEFT` (`Command.MOVE_LEFT`): Decrement active brick column by `1`.
-- `R` or `RIGHT` (`Command.MOVE_RIGHT`): Increment active brick column by `1`.
-- `O` or `ORIENT` (`Command.ORIENT`): Toggle `HORIZONTAL` $\leftrightarrow$ `VERTICAL` at the current column.
-- `C` or `CYCLE` (`Command.CYCLE`): Shift the 3 blocks `[b0, b1, b2]` $\rightarrow$ `[b2, b0, b1]`.
-- `D` or `DROP` (`Command.DROP`): Drop and lock the active brick into the `Grid`.
-- `Q` or `QUIT` (`Command.QUIT`): Terminate the session with `GameStatus.QUIT`.
+### Requirement 2: Immutable 3-Block Brick Value Type & Printable 7-Bit ASCII Validation (`Q5`)
+The system SHALL represent each `Brick` as an immutable value object containing an ordered list of 3 `Block` elements and a non-null `Orientation` (`HORIZONTAL` or `VERTICAL`).
+- Each `Block` SHALL validate that its symbol is a printable, non-whitespace **7-bit ASCII** character (`0x21 <= symbol <= 0x7E`).
+- `Brick` SHALL defensively copy its `List<Block>` on construction via `List.copyOf` and expose no mutable fields.
+- To support Future Expansion Point 2 without overbuilding, `Brick` SHALL expose `widthSpan()`, `heightSpan()`, and `occupiedPositions(anchorCol, anchorRow)` computed from its blocks and orientation.
 
-Unrecognized/empty commands or moves that would place any part of the active brick outside columns `[0, width - 1]` MUST be caught and reported via `ValidationResult.Invalid` (at parse time) or `StepOutcome.REJECTED` (at engine execution time) without mutating the `Grid` or active brick.
+#### Scenario 2.1: Create Valid 3-Block Brick with Printable ASCII Symbols
+- **GIVEN** three valid blocks `[Block('@'), Block('#'), Block('$')]` and `Orientation.HORIZONTAL`
+- **WHEN** `Brick.create(blocks, Orientation.HORIZONTAL)` is called
+- **THEN** the result SHALL be `ValidationResult.Valid<Brick>` with `widthSpan() == 3` and `heightSpan() == 1`.
 
-#### Scenario 3.1: Moving Active Brick Within Bounds and Toggling Orientation
-- **GIVEN** a `6x8` grid and an active `HORIZONTAL` brick `[@, #, *]` spawned at default column `(6 - 3) / 2 = 1` (occupying columns `1, 2, 3`)
-- **WHEN** the player executes `MOVE_RIGHT`, `CYCLE`, and `ORIENT`
-- **THEN** the active brick moves to column `2` (occupying `2, 3, 4`), cycles its blocks to `[*, @, #]`, and toggles to `VERTICAL` at column `2` with `StepOutcome.APPLIED`
+#### Scenario 2.2: Defensive Copy of Caller Block Collection
+- **GIVEN** a mutable `ArrayList<Block>` passed to `Brick.create(mutableList, Orientation.VERTICAL)`
+- **WHEN** `mutableList.clear()` or `mutableList.set(0, ...)` is called after creation
+- **THEN** `brick.blocks()` SHALL still contain the original 3 blocks in their original order, and calling `brick.blocks().add(...)` SHALL throw `UnsupportedOperationException`.
 
-#### Scenario 3.2: Out-of-Bounds Move or Wall-Blocked Orientation Toggle Rejected Safely
-- **GIVEN** a `6x8` grid with a `VERTICAL` brick at the rightmost column `5`
-- **WHEN** the player executes `MOVE_RIGHT` or `ORIENT` (which would require columns `5, 6, 7`, exceeding max column `5`)
-- **THEN** the engine returns a `GameStateSnapshot` with `StepOutcome.REJECTED` (`ValidationErrorCode.OUT_OF_BOUNDS_MOVE`), and the active brick remains `VERTICAL` at column `5`
+#### Scenario 2.3: Reject Blank, Control, or Non-ASCII Block Symbols
+- **GIVEN** a character that is whitespace (`' '`, `'\t'`, `'\n'`), an ASCII control character (`'\0'`, `0x7F`), or a non-ASCII Unicode character (`'★'`, `0x00E9`)
+- **WHEN** `Block.create(ch)` is called
+- **THEN** the result SHALL be `ValidationResult.Invalid` with error code `ValidationErrorCode.INVALID_SYMBOL`.
 
-#### Scenario 3.3: Dodgy or Empty Command Strings Rejected
-- **GIVEN** command strings `""`, `"   "`, `"JUMP"`, `"123"`, or `"DROP_NOW"`
-- **WHEN** `GameInputParser.parseCommands` is invoked
-- **THEN** it returns `ValidationResult.Invalid` with error code `EMPTY_INPUT` or `INVALID_COMMAND`
-
----
-
-### Requirement 4: Drop Physics for Horizontal and Vertical Bricks (`DEC-05`)
-When `Command.DROP` is executed on an active `Brick`:
-- If `VERTICAL` ($3 \times 1$) at column `c` with blocks `[b0, b1, b2]` (from bottom `b0` to top `b2`), the blocks SHALL stack in column `c` at `row = firstFreeRow(c)`, `firstFreeRow(c) + 1`, and `firstFreeRow(c) + 2`.
-- If `HORIZONTAL` ($1 \times 3$) at column `c` with blocks `[b0, b1, b2]` (left to right), block `b0` SHALL land at `(firstFreeRow(c), c)`, `b1` at `(firstFreeRow(c + 1), c + 1)`, and `b2` at `(firstFreeRow(c + 2), c + 2)`.
-
-#### Scenario 4.1: Vertical Brick Drops onto Floor and Stacks
-- **GIVEN** an empty `6x8` grid and a `VERTICAL` brick `[@, #, *]` at column `2`
-- **WHEN** `Command.DROP` is executed
-- **THEN** cell `(0, 2)` contains `@`, cell `(1, 2)` contains `#`, and cell `(2, 2)` contains `*`
-
-#### Scenario 4.2: Horizontal Brick Drops Across Uneven Columns with Per-Block Gravity
-- **GIVEN** a `6x8` grid where column `1` already has 2 blocks (`row 0` and `row 1` occupied) and columns `2` and `3` are empty, and an active `HORIZONTAL` brick `[@, #, *]` at column `1`
-- **WHEN** `Command.DROP` is executed
-- **THEN** `@` lands at `(2, 1)`, `#` lands at `(0, 2)`, and `*` lands at `(0, 3)`
+#### Scenario 2.4: Reject Invalid Orientation or Wrong Block Count
+- **GIVEN** a null `Orientation` or a list of `0`, `1`, `2`, or `4` blocks
+- **WHEN** `Brick.create(blocks, orientation)` is called
+- **THEN** the result SHALL be `ValidationResult.Invalid` with `ValidationErrorCode.INVALID_ORIENTATION` or `ValidationErrorCode.INVALID_BRICK_SIZE`.
 
 ---
 
-### Requirement 5: Simultaneous Match Clearing & Gravity Cascades (`DEC-06`)
-Immediately after a `Brick` is dropped onto the `Grid`, the engine SHALL repeatedly execute a **Match & Cascade Resolution Loop** until no matches remain:
-1. Scan the `Grid` for all horizontal and vertical contiguous lines of **3 or more** identical `Symbol`s.
-2. If one or more runs of $\ge 3$ exist, collect the union of all matched coordinates simultaneously, remove those `Block`s, increment `matchesCleared` by the number of distinct runs and `blocksCleared` by the number of unique cells removed, and add `100 * removedCellsInWave * waveIndex` to `score`.
-3. Apply column gravity to every column so all remaining `Block`s above cleared cells shift down to fill empty spaces without changing their vertical order.
-4. Repeat from Step 1 with `waveIndex + 1` to resolve chain-reaction `Cascade`s.
+### Requirement 3: Seeded Pseudo-Random Queue, Overflow-Capable Brick Count & Same-Seed Retry (`Q1` & `Q2`)
+The system SHALL generate bricks and their initial top-row spawn columns using a deterministic pseudo-random stream based on a configurable `long seed` (`java.util.Random(seed)`).
+- The total number of bricks in a level (`brickCount`) SHALL be finite and configurable.
+- `GameConfiguration` and `SeededBrickGenerator` SHALL validate that `brickCount` is large enough to potentially cause a vertical overflow on the configured grid: `brickCount * maxBrickSpan > grid.height` (i.e., `brickCount >= (grid.height / 3) + 1`). If `brickCount` is smaller, validation SHALL fail with `ValidationErrorCode.INSUFFICIENT_BRICK_COUNT`.
+- Each brick SHALL spawn at a pseudo-random valid column (`0 <= spawnCol <= grid.width - brick.widthSpan()`) on the top of the grid (`anchorRow = grid.height - 1` for `HORIZONTAL`, `anchorRow = grid.height - 3` for `VERTICAL`).
+- When a user executes `Command.RETRY`, the engine SHALL reset the level using the **exact same `seed`**, producing the identical sequence of bricks and top spawn columns.
 
-#### Scenario 5.1: Horizontal and Vertical 3-of-a-Kind Matches Clear Simultaneously
-- **GIVEN** a `6x8` grid where dropping a brick forms a horizontal run of three `@` blocks at `(0, 0), (0, 1), (0, 2)`
-- **WHEN** `Command.DROP` finishes resolution
-- **THEN** cells `(0, 0), (0, 1), (0, 2)` are empty (`Optional.empty()`), `matchesCleared` increments by `1`, `blocksCleared` increments by `3`, and `score` increases by `300`
+#### Scenario 3.1: Predictive Determinism from Identical Seed
+- **GIVEN** two `SeededBrickGenerator` instances initialized with `seed = 987654321L`, `brickCount = 15`, `gridWidth = 6`, and `symbols = "@#$%&"`
+- **WHEN** all 15 bricks and spawn columns are drawn from both generators
+- **THEN** both generators SHALL produce the exact same sequence of `Brick` symbols, orientations, and `spawnCol` coordinates.
 
-#### Scenario 5.2: Gravity Cascade Chain Reaction
-- **GIVEN** a grid where clearing a bottom match of three `#` blocks causes a `#` block and two `$` blocks above them to fall and align with two existing `$` blocks on row `0`
-- **WHEN** `Command.DROP` finishes resolution
-- **THEN** both waves of matches are cleared in a single drop turn, no blocks remain floating above empty cells, and `score` reflects the cascade multiplier (`wave 1` + `wave 2`)
+#### Scenario 3.2: Reject Brick Count Too Small to Cause Overflow
+- **GIVEN** a grid of `height = 12` (requiring at least `(12 / 3) + 1 = 5` bricks of span 3 to potentially overflow vertically)
+- **WHEN** `GameConfiguration` or `SeededBrickGenerator` is initialized with `brickCount = 4` (or `<= 0`)
+- **THEN** validation SHALL return `ValidationResult.Invalid` with error code `ValidationErrorCode.INSUFFICIENT_BRICK_COUNT`.
+
+#### Scenario 3.3: Same-Seed Level Retry (`Command.RETRY`)
+- **GIVEN** an active or finished game session started with `seed = 42L` where several bricks have been placed
+- **WHEN** `engine.execute(Command.RETRY)` is invoked
+- **THEN** the grid SHALL reset to empty, `score` and `clearedCount` SHALL reset to `0`, `status` SHALL be `GameStatus.ACTIVE`, `snapshot().seed()` SHALL remain `42L`, and the spawned brick sequence SHALL exactly match the initial run of `seed = 42L`.
 
 ---
 
-### Requirement 6: Game Completion & Grid Overflow (`DEC-07`)
-- **Completion (`GameStatus.COMPLETED`)**: When all bricks in the `BrickSource` have been dropped and all matches/cascades resolved without exceeding the grid height, the session status SHALL transition to `GameStatus.COMPLETED`.
-- **Overflow (`GameStatus.GAME_OVER`)**: If dropping a brick causes any of its 3 blocks to be placed at `row >= height`, the session status SHALL immediately transition to `GameStatus.GAME_OVER`, and subsequent movement/drop commands SHALL be rejected.
+### Requirement 4: Command Validation, Timer-Driven Fall (`TICK`), & Rigid-Bar Drop Physics (`Q2` & `Q3`)
+The system SHALL parse raw player commands via `CommandParser` and reject empty, null, whitespace-only, or unknown commands with `ValidationErrorCode.EMPTY_INPUT` or `ValidationErrorCode.UNKNOWN_COMMAND`.
+While a brick is airborne:
+- **`LEFT` (`L`) / `RIGHT` (`R`)**: Moves the active brick 1 column left or right if all 3 blocks remain within `0 .. width - 1` and do not collide with existing stacked blocks; otherwise returns `ValidationErrorCode.OUT_OF_BOUNDS_MOVE` (or `COLLISION_BLOCKED`) without mutating state.
+- **`ORIENT` (`O`)**: Toggles between `HORIZONTAL` and `VERTICAL` around the current anchor position if all 3 blocks fit within grid bounds without collision; otherwise returns `ValidationErrorCode.OUT_OF_BOUNDS_MOVE` without mutating state.
+- **`CYCLE` (`C`)**: Cyclically shifts the 3 blocks within the active brick (`[b0, b1, b2] -> [b2, b0, b1]`).
+- **`TICK` (`T` / Timer Step)**: Moves the active brick down by 1 row as a **rigid 3-block bar** if all 3 blocks can occupy `row - 1` without hitting the floor (`row < 0`) or any stacked block; if any of its 3 blocks cannot move down 1 row, the entire brick locks in place as a rigid bar at its current row.
+- **`DROP` (`D`)**: Immediately drops the active brick straight down as a **rigid 3-block bar** to the lowest row where all 3 blocks remain unobstructed above the floor/stack, and locks all 3 blocks into the `Grid`.
 
-#### Scenario 6.1: Placing All Bricks Transitions to COMPLETED
-- **GIVEN** a brick queue containing 2 bricks on a `6x8` grid
-- **WHEN** both bricks are dropped within bounds
-- **THEN** `snapshot().remainingBricks()` is `0` and `snapshot().status()` is `GameStatus.COMPLETED`
+#### Scenario 4.1: Reject Empty and Dodgy Commands
+- **GIVEN** a `TextCommandParser`
+- **WHEN** `parse("")`, `parse("   ")`, or `parse(null)` is called
+- **THEN** it SHALL return `ValidationResult.Invalid(ValidationErrorCode.EMPTY_INPUT)`
+- **AND WHEN** `parse("JUMP 99")` or `parse("$$$")` is called
+- **THEN** it SHALL return `ValidationResult.Invalid(ValidationErrorCode.UNKNOWN_COMMAND)`.
 
-#### Scenario 6.2: Overflowing Column Transitions to GAME_OVER
-- **GIVEN** a `6x4` grid where column `2` already contains 2 blocks (`rows 0, 1`) and a `VERTICAL` brick (3 blocks high) is dropped at column `2` (requiring rows `2, 3, 4` where max row is `3`)
-- **WHEN** `Command.DROP` is executed
-- **THEN** `snapshot().status()` transitions to `GameStatus.GAME_OVER`
+#### Scenario 4.2: Rigid-Bar Drop of Horizontal Brick Over Uneven Stack (`Q3`)
+- **GIVEN** a `6 x 12` grid where column `1` has stacked blocks up to `row = 2` (`(1,0), (1,1), (1,2)` occupied) while columns `2` and `3` are completely empty
+- **AND** an active `HORIZONTAL` brick `[Block('@'), Block('#'), Block('$')]` spanning columns `1, 2, 3` at top row `11`
+- **WHEN** `engine.execute(Command.DROP)` is called
+- **THEN** the brick SHALL stop as a **rigid horizontal bar** at `row = 3` (because its leftmost block at `col = 1` contacts the stacked block at `(1, 2)`), locking `(1, 3) = '@'`, `(2, 3) = '#'`, and `(3, 3) = '$'`.
+
+#### Scenario 4.3: Timer `TICK` Steps Down One Row Until Contact Locks Brick (`Q2` & `Q3`)
+- **GIVEN** an empty `6 x 6` grid with a `HORIZONTAL` brick spawned at `row = 5, col = 1`
+- **WHEN** `engine.execute(Command.TICK)` is invoked 5 times
+- **THEN** the active brick's `anchorRow` SHALL decrement from `5` to `4`, `3`, `2`, `1`, and `0` while remaining `ACTIVE`
+- **AND WHEN** `engine.execute(Command.TICK)` is invoked a 6th time at `row = 0`
+- **THEN** the brick SHALL lock into `row = 0` and the next brick in the seeded queue SHALL spawn at the top of the grid.
+
+---
+
+### Requirement 5: Horizontal Row Clearing / Matching & Individual-Block Gravity on Stacked Blocks (`Q4`)
+Once a brick locks into the `Grid`, its 3 blocks become independent stacked `Block` cells (the original rigid 3-block brick shape is no longer applied to stacked blocks).
+After every brick lock:
+1. The system SHALL detect all **full horizontal rows** (every column `0 .. width - 1` in row `r` is occupied) AND all **horizontal contiguous symbol matches** (`>= 3` adjacent cells in the same horizontal row `r` containing the identical block symbol).
+2. All matched/full horizontal cells SHALL be cleared simultaneously.
+3. **Individual-Block Gravity**: Every remaining stacked block above a cleared cell SHALL drop straight down in its own column until it rests on `row = 0` or another stacked block directly beneath it — regardless of what brick it originally belonged to.
+4. Steps 1–3 SHALL repeat in a chain-cascade loop until no further horizontal full rows or horizontal matches exist.
+
+#### Scenario 5.1: Full Horizontal Row Clear Drops Stacked Blocks Above via Individual Gravity (`Q4`)
+- **GIVEN** a `6 x 12` grid where a rigid horizontal brick `[@, #, $]` was previously locked as a bridge at `row = 2, cols = 1..3` (supported only at `(1, 1)` and `(1, 0)`), and `row = 0` becomes completely filled across all columns `0..5`
+- **WHEN** `row = 0` clears
+- **THEN** all blocks above `row = 0` SHALL lose their original brick rigidity and drop independently under column gravity:
+  - `(1, 1)` drops to `(1, 0)` and `(1, 2) = '@'` drops to `(1, 1)`,
+  - `(2, 2) = '#'` (which had empty cells at `(2, 1)` and `(2, 0)`) drops all the way to the floor at `(2, 0)`, and
+  - `(3, 2) = '$'` drops all the way to the floor at `(3, 0)`.
+
+#### Scenario 5.2: Horizontal Contiguous Symbol Match Clear & Chain Cascade
+- **GIVEN** a grid where locking a brick creates 3 contiguous `'@'` blocks horizontally at `(1, 0), (2, 0), (3, 0)`, and above them sit blocks that will form another horizontal match once dropped
+- **WHEN** the lock resolution executes
+- **THEN** the first horizontal match SHALL clear, individual-block column gravity SHALL drop the blocks above, the secondary horizontal match SHALL clear in chain step 2, and `PlacementOutcome.chainCount()` SHALL equal `2`.
+
+---
+
+### Requirement 6: Vertical Overflow Out-of-Bounds Error (`Q5`), Level Completion & SLF4J Logging
+- **Vertical Overflow**: If a newly spawned brick at the top of the grid overlaps an already-occupied cell, or if a locked brick extends beyond `height - 1` after row clearing, the engine SHALL return `ValidationErrorCode.VERTICAL_OVERFLOW` and transition the game status to `GameStatus.GAME_OVER`.
+- **Level Completion**: When the finite seeded queue is exhausted and the final brick locks and resolves without vertical overflow, the engine SHALL transition the game status to `GameStatus.COMPLETED`.
+- **Structured Logging**: The system SHALL log session lifecycle, seed, brick spawns, commands, clears, and validation errors via `SLF4J` (`org.slf4j.Logger`) without writing log output to the player's `GameRenderer` stream.
+
+#### Scenario 6.1: Vertical Overflow Triggers Out-of-Bounds Game Over (`Q5`)
+- **GIVEN** a `6 x 6` grid where column `2` is stacked up to the top row (`row = 5`)
+- **WHEN** a brick locks or spawns requiring cell `(2, 5)` (or `row >= 6`)
+- **THEN** the engine SHALL report `ValidationErrorCode.VERTICAL_OVERFLOW` and `engine.snapshot().status()` SHALL be `GameStatus.GAME_OVER`.
+
+#### Scenario 6.2: Exhausting the Seeded Brick Queue Completes the Level
+- **GIVEN** a valid seeded queue with 1 brick remaining and an unobstructed grid
+- **WHEN** the player drops (`Command.DROP`) the final brick and it locks within bounds
+- **THEN** `engine.snapshot().status()` SHALL transition to `GameStatus.COMPLETED`.
