@@ -10,25 +10,29 @@
   - Agent Skills Specification: `.agents/spec/specification.md` & `.agents/spec/best-practices.md`
   - OpenSpec Schemas: `openspec/schemas/spec-driven-reviewed/schema.yaml` & `openspec/schemas/spec-driven/schema.yaml`
 
-## 2. Personas & Skills (`.agents/skills/` — Formatted per Vendored Agent Skills Spec)
-Agents and skills can originate from any source or library, but must be formatted using the agent-agnostic Agent Skills (`.agents/spec/specification.md`) `SKILL.md` frontmatter specification. Default definitions and their verbatim upstream sources (`references/upstream-source.md`) are copied into `.agents/skills/<name>/` and can be customized directly within this repository:
-1. **`java-expert`** (`.agents/skills/java-expert/SKILL.md`) — Java 21, Gradle 9 Groovy DSL, TOML catalog, and JUnit 5 + AssertJ implementation specialist.
-2. **`java-architect`** (`.agents/skills/java-architect/SKILL.md`) — Clean/hexagonal architecture, DDD boundaries, and `design.md` lead.
-3. **`code-review-expert`** (`.agents/skills/code-review-expert/SKILL.md`) — Post-implementation 5-pillar code, architecture, security, and JUnit 5 test reviewer.
-4. **`openspec-reviewer`** (`.agents/skills/openspec-reviewer/SKILL.md`) — Pre-implementation `review.md` (`OPTIMAL` / `IMPROVABLE` / `RETHINK`) and spec/design gate reviewer (`proposal.md` -> `review.md` -> `specs/` & `design.md` -> `tasks.md`).
-5. **`readme-generator`** (`.agents/skills/readme-generator/SKILL.md`) — Zero-hallucination `README.md` and `package-info.java` documenter.
-6. **`git-workflow-manager`** (`.agents/skills/git-workflow-manager/SKILL.md`) — Branching, Conventional Commits, and pre-commit verification manager.
-7. **`cicd-expert`** (`.agents/skills/cicd-expert/SKILL.md`) — CI/CD pipeline and Gradle build cache automation expert.
-8. **`first-principles-thinking`** (`.agents/skills/first-principles-thinking/SKILL.md`) — First-principles problem deconstruction, assumption challenging, and ground-up solution synthesis.
+## 2. Strict Role Boundaries & Spec-Driven TDD Workflow
+1. **Designers & Spec Reviewers NEVER Write Code (`first-principles-thinking`, `java-architect`, `openspec-reviewer`)**:
+   - Challenge assumptions, design deep modules (`Module`, `Interface`, `Seam`, `Adapter`, `Depth`), and lock in **Pre-Agreed Test Seams** in `specs/` and `design.md`.
+2. **Developer Executes Vertical Red $\rightarrow$ Green TDD Slices (`java-expert` + `test-driven-development`)**:
+   - Follows the Iron Law (`NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST`).
+   - Builds one vertical slice at a time at a confirmed seam (`RED` $\rightarrow$ `Verify RED` $\rightarrow$ `GREEN` $\rightarrow$ `Verify GREEN + Mutation Check`).
+3. **Code Reviewer NEVER Writes Code — Suggests Refactorings Fed Back to Developer (`code-review-expert` $\rightarrow$ `java-expert`)**:
+   - `code-review-expert` performs a read-only **Two-Axis Review** (**Axis 1: Spec & Pre-Agreed Seam Compliance**; **Axis 2: Standards, Security, TDD Honesty & 12-Item Fowler Code Smell Baseline**) and feeds concrete refactoring instructions back to `java-expert`, who applies them while keeping `./gradlew check` green.
 
-## 3. Architecture Rules
-- **Domain (`com.example.app.domain`)**: Keep domain models strictly framework-agnostic; encapsulate core business invariants here.
-- **Service (`com.example.app.service`)**: Place application orchestration and use cases in `service`.
+## 3. Unified Project Personas & Skills (`.agents/skills/<name>/SKILL.md`)
+All upstream sources are merged directly into a single self-contained `SKILL.md` file per skill (formatted per `.agents/spec/specification.md`) and can be customized locally within this repository:
+1. **`first-principles-thinking`** (`.agents/skills/first-principles-thinking/SKILL.md`) — First-principles problem deconstruction and assumption challenging (No-Code Designer Role).
+2. **`java-architect`** (`.agents/skills/java-architect/SKILL.md`) — Deep module design, clean/hexagonal layering, and Confirmed Test Seam definition in `design.md` (No-Code Designer Role).
+3. **`openspec-reviewer`** (`.agents/skills/openspec-reviewer/SKILL.md`) — Evidence-driven `review.md` (`OPTIMAL` / `IMPROVABLE` / `RETHINK`) and Gate 1–4 verifier (No-Code Reviewer Role).
+4. **`test-driven-development`** (`.agents/skills/test-driven-development/SKILL.md`) — Unified TDD discipline (Iron Law, pre-agreed seams, vertical tracer-bullet Red $\rightarrow$ Green loop, Gate Functions 1 & 2, Mutation Check, and reviewer-driven refactoring).
+5. **`java-expert`** (`.agents/skills/java-expert/SKILL.md`) — Developer Agent for Java 21, Gradle 9 Groovy DSL, TOML catalog, Red $\rightarrow$ Green JUnit 5/AssertJ implementation, and executing refactoring recommendations from `code-review-expert`.
+6. **`code-review-expert`** (`.agents/skills/code-review-expert/SKILL.md`) — Read-only Two-Axis Reviewer & Fowler Refactoring Advisor that feeds refactoring tasks back to `java-expert` (No-Code Reviewer Role).
+7. **`readme-generator`** (`.agents/skills/readme-generator/SKILL.md`) — Zero-hallucination `README.md` and `package-info.java` documenter.
+8. **`git-workflow-manager`** (`.agents/skills/git-workflow-manager/SKILL.md`) — Branching, Conventional Commits, and pre-commit verification manager.
+9. **`cicd-expert`** (`.agents/skills/cicd-expert/SKILL.md`) — CI/CD pipeline and Gradle build cache automation expert.
+
+## 4. Architecture Rules & Conventions
+- **Domain (`com.example.app.domain`)**: Keep domain models strictly framework-agnostic; encapsulate core business invariants here using Java 21 `record` and `sealed` types.
+- **Service (`com.example.app.service`)**: Place application orchestration and public test seams in `service`.
 - **Config (`com.example.app.config`)**: Keep configuration loading and constructor-based dependency wiring isolated in `config`.
-- **Testing Requirement**: Require JUnit 5 unit tests (and AssertJ assertions) for all new domain logic and service orchestration, verified via `./gradlew check`.
-
-## 4. Conventions
-- Use constructor injection for all service and component dependencies.
-- Use Java `record` types for immutable DTOs and value objects.
-- Use clear, ubiquitous domain naming across packages, classes, and methods (`package-info.java` documents each layer's responsibility).
-- Centralize all library versions in `gradle/libs.versions.toml`.
+- **Conventions**: Use constructor injection, Java `record` types for immutable DTOs/value objects, and centralize all library versions in `gradle/libs.versions.toml`.

@@ -5,25 +5,30 @@ context: |
   Vendored Specs & Schemas (Copy In, Don't Link Out):
     - Agent Skills specification: .agents/spec/specification.md & .agents/spec/best-practices.md
     - OpenSpec schemas: openspec/schemas/spec-driven-reviewed/schema.yaml & openspec/schemas/spec-driven/schema.yaml
-  Architecture: Keep domain models framework-agnostic (domain/); place orchestration in service/; wire dependencies via constructor injection in config/; require unit tests for all new domain logic
-  Personas & Skills (.agents/skills/<name>/SKILL.md — formatted per .agents/spec/specification.md):
-    - first-principles-thinking (.agents/skills/first-principles-thinking/SKILL.md): Deconstructs problems to fundamental truths and challenges assumptions during proposal and design
-    - java-architect (.agents/skills/java-architect/SKILL.md): Leads module/package architecture and design.md
-    - openspec-reviewer (.agents/skills/openspec-reviewer/SKILL.md): Produces review.md (OPTIMAL / IMPROVABLE / RETHINK) and reviews proposal.md, specs/, design.md, and tasks.md before coding begins
-    - java-expert (.agents/skills/java-expert/SKILL.md): Leads Java 21, Gradle Groovy DSL, TOML catalog, and JUnit 5 + AssertJ implementation
-    - code-review-expert (.agents/skills/code-review-expert/SKILL.md): Audits spec compliance, layer boundaries, security, and test coverage before archiving/merging
-    - readme-generator (.agents/skills/readme-generator/SKILL.md): Maintains README.md and package-info.java documentation
+  Strict Role Boundaries (Non-Negotiable):
+    - Designer / Reviewer (first-principles-thinking, java-architect, openspec-reviewer): NEVER writes production or test code. Defines specs, deep module interfaces, and Pre-Agreed Test Seams.
+    - Developer (java-expert + test-driven-development): Sole code author. Executes vertical Red -> Green slices at pre-agreed seams and applies refactoring recommendations fed back by code-review-expert.
+    - Code Reviewer (code-review-expert): NEVER writes or edits code. Runs the Two-Axis Review (Spec/Seams + Standards/TDD Honesty/Fowler Code Smells) and feeds concrete refactoring tasks back to java-expert.
+  Architecture: Keep domain models framework-agnostic (domain/); place orchestration in service/; wire dependencies via constructor injection in config/; test only at pre-agreed public seams
+  Personas & Skills (.agents/skills/<name>/SKILL.md — unified single-file skills formatted per .agents/spec/specification.md):
+    - first-principles-thinking (.agents/skills/first-principles-thinking/SKILL.md): Deconstructs problems to fundamental truths and challenges assumptions during proposal and design (No-Code Role)
+    - java-architect (.agents/skills/java-architect/SKILL.md): Designs deep module interfaces, dependency categories, and Confirmed Test Seams in design.md (No-Code Role)
+    - openspec-reviewer (.agents/skills/openspec-reviewer/SKILL.md): Produces review.md (OPTIMAL / IMPROVABLE / RETHINK) and enforces seam and vertical-slice gates across proposal.md, specs/, design.md, and tasks.md (No-Code Role)
+    - test-driven-development (.agents/skills/test-driven-development/SKILL.md): Enforces the Iron Law (no production code without a failing test first), pre-agreed test seams, vertical tracer-bullet slices (Red -> Verify Red -> Green -> Verify Green + Mutation Check), and reviewer-driven refactoring
+    - java-expert (.agents/skills/java-expert/SKILL.md): Developer Agent that executes the Red -> Green TDD loop in Java 21 + Gradle 9 Groovy DSL + JUnit 5/AssertJ and applies refactorings suggested by code-review-expert
+    - code-review-expert (.agents/skills/code-review-expert/SKILL.md): Read-only Two-Axis Reviewer that audits Spec/Seam compliance and Fowler code smells, feeding refactoring tasks back to java-expert (No-Code Role)
+    - readme-generator (.agents/skills/readme-generator/SKILL.md): Maintains zero-hallucination README.md and package-info.java documentation
     - git-workflow-manager (.agents/skills/git-workflow-manager/SKILL.md): Manages branching and Conventional Commits linked to OpenSpec changes
     - cicd-expert (.agents/skills/cicd-expert/SKILL.md): Maintains CI/CD workflows and Gradle build caching
   Conventions:
     - Use constructor injection, Java 21 records for immutable DTOs/value objects, and clear domain naming
     - Centralize all dependency versions in gradle/libs.versions.toml
     - Use Groovy DSL (build.gradle & settings.gradle) exclusively — never Kotlin
-  Verification: Every new service, domain model, or endpoint requires JUnit 5 unit tests and integration tests verified via './gradlew check' (or 'gwcheck') and reviewed by code-review-expert
+  Verification: Every new capability is built test-first at a pre-agreed seam via './gradlew check' (or 'gwcheck'), audited by code-review-expert, and refactored by java-expert while staying green
 
 rules:
   proposal:
-    - Activate first-principles-thinking (.agents/skills/first-principles-thinking/SKILL.md) to challenge assumptions and isolate fundamental domain truths
+    - Activate first-principles-thinking (.agents/skills/first-principles-thinking/SKILL.md) to challenge assumptions and isolate fundamental domain truths (never write code)
     - Reference openspec/project.md and identify affected layers (config, domain, service)
     - Pass the openspec-reviewer Gate 1 check before advancing
   review:
@@ -31,16 +36,15 @@ rules:
     - Evaluate Problem Validity, Scope Discipline, Codebase Reality Check, Risk Assessment, and Alternatives
     - Record an explicit verdict (OPTIMAL, IMPROVABLE, or RETHINK) before creating specs or design
   specs:
-    - Use Given/When/Then format for all behavior scenarios and edge cases
-    - Incorporate all accepted recommendations from review.md
-    - Pass the openspec-reviewer Gate 2 check before advancing
+    - Use Given/When/Then format with independent literal expected values for all scenarios and edge cases
+    - Propose the public test seam(s) (with what each seam catches and misses) in the Proposed Test Seams section
+    - Incorporate all accepted recommendations from review.md and pass the openspec-reviewer Gate 2 check
   design:
-    - Activate java-architect (.agents/skills/java-architect/SKILL.md) and first-principles-thinking to design the simplest clean solution
+    - Activate java-architect (.agents/skills/java-architect/SKILL.md) and first-principles-thinking to design deep modules using "Design It Twice" (never write production or test code)
     - Keep domain models framework-agnostic using Java 21 records and constructor injection
-    - Declare any new dependencies in gradle/libs.versions.toml
-    - Pass the openspec-reviewer Gate 3 check before advancing
+    - Lock in the Confirmed Test Seams table before advancing and pass the openspec-reviewer Gate 3 check
   tasks:
-    - Activate java-expert for implementation tasks, code-review-expert for verification, readme-generator for docs, and git-workflow-manager for commits
-    - Break work into atomic tasks that include JUnit 5 + AssertJ unit tests for all domain and service logic
+    - Break work into vertical tracer-bullet slices per confirmed seam (RED -> Verify RED -> GREEN -> Verify GREEN + Mutation Check) executed by java-expert + test-driven-development
+    - Never use horizontal slicing ("write all code then write all tests")
     - Pass the openspec-reviewer Gate 4 check before starting implementation
-    - End every task list with './gradlew check', a code-review-expert audit, and a readme-generator documentation sync
+    - End every task list with a read-only code-review-expert Two-Axis Audit that feeds refactoring suggestions back to java-expert, followed by './gradlew check', readme-generator sync, and git-workflow-manager commit

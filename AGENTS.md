@@ -1,29 +1,32 @@
 # Project Agent Guidelines & Personas (`java-test`)
 
-This repository uses **Fission-AI/OpenSpec** ([openspec/config.yaml](openspec/config.yaml) & [openspec/project.md](openspec/project.md)) along with self-contained personas and skills stored in `.agents/skills/<name>/SKILL.md`.
+This repository uses **Fission-AI/OpenSpec** ([openspec/config.yaml](openspec/config.yaml) & [openspec/project.md](openspec/project.md)) along with 9 unified, single-file skills stored in `.agents/skills/<name>/SKILL.md`.
 
-> **Format & Customizing Skills in This Repo ("Copy In, Don't Link Out")**: Agents and skills can be sourced from anywhere (community libraries, team conventions, or custom definitions), provided they are formatted using the agent-agnostic Agent Skills `<name>/SKILL.md` frontmatter specification vendored at [.agents/spec/specification.md](.agents/spec/specification.md) and [.agents/spec/best-practices.md](.agents/spec/best-practices.md). Each default skill and its verbatim upstream source (`references/upstream-source.md`) are copied directly into `.agents/skills/` so you can freely modify them or add new ones inside this repository as needed (`repo-init` will not overwrite existing files unless `--force` is passed).
+> **Format & Customizing Skills in This Repo ("Copy In, Don't Link Out")**: Every skill merges its upstream references directly into a single self-contained `<name>/SKILL.md` file formatted per the vendored Agent Skills specification ([.agents/spec/specification.md](.agents/spec/specification.md) and [.agents/spec/best-practices.md](.agents/spec/best-practices.md)). You can freely modify any skill inside this repository (`repo-init` will not overwrite existing files unless `--force` is passed).
 
 ---
 
-## Vendored Specifications & Schemas
+## Strict Role Separation: Spec-Driven Design $\rightarrow$ Red-Green TDD $\rightarrow$ Reviewer-Suggested Refactor
 
-- **Agent Skills Specification**: [.agents/spec/specification.md](.agents/spec/specification.md) & [.agents/spec/best-practices.md](.agents/spec/best-practices.md)
-- **OpenSpec Reviewed Workflow Schema (`spec-driven-reviewed`)**: [openspec/schemas/spec-driven-reviewed/schema.yaml](openspec/schemas/spec-driven-reviewed/schema.yaml)
-- **OpenSpec Standard Workflow Schema (`spec-driven`)**: [openspec/schemas/spec-driven/schema.yaml](openspec/schemas/spec-driven/schema.yaml)
-- **AI Repository Initialization Prompt**: [openspec/prompts/repo-init.md](openspec/prompts/repo-init.md)
+1. **Designers & Spec Reviewers NEVER Write Code (`first-principles-thinking`, `java-architect`, `openspec-reviewer`)**:
+   - Produce and validate `proposal.md`, `review.md`, `specs/`, `design.md` (with **Confirmed Test Seams**), and `tasks.md`.
+2. **Developer Runs the Red $\rightarrow$ Green Loop & Applies Refactorings (`java-expert` + `test-driven-development`)**:
+   - Executes vertical tracer-bullet slices at pre-agreed seams (`RED` $\rightarrow$ `Verify RED` $\rightarrow$ `GREEN` $\rightarrow$ `Verify GREEN + Mutation Check`) and implements refactoring recommendations fed back by `code-review-expert`.
+3. **Code Reviewer NEVER Writes Code (`code-review-expert`)**:
+   - Performs a strictly read-only **Two-Axis Audit** (**Axis 1: Spec & Agreed Seam Compliance**; **Axis 2: Standards, Security, TDD Honesty & 12-Item Fowler Code Smell Baseline**) and feeds concrete refactoring tasks back to `java-expert`.
 
 ---
 
 ## Installed Project Personas & Skills (`.agents/skills/`)
 
-| Name (`name`) | Skill Path | Upstream Source Copy | Role & Activation Stage |
-| :--- | :--- | :--- | :--- |
-| **`first-principles-thinking`** | [.agents/skills/first-principles-thinking/SKILL.md](.agents/skills/first-principles-thinking/SKILL.md) | [upstream-source.md](.agents/skills/first-principles-thinking/references/upstream-source.md) | **First-Principles Thinking Expert** — Challenges assumptions (5 Whys, Socratic questioning), isolates fundamental truths, and rebuilds solutions from scratch during `proposal.md` and `design.md` |
-| **`java-expert`** | [.agents/skills/java-expert/SKILL.md](.agents/skills/java-expert/SKILL.md) | [upstream-source.md](.agents/skills/java-expert/references/upstream-source.md) | **Java Development Expert** — Implements Java 21 LTS code (`record`, `sealed`, virtual threads), Gradle 9 Groovy DSL (`build.gradle` — no Kotlin), `gradle/libs.versions.toml`, and JUnit 5 + AssertJ tests |
-| **`java-architect`** | [.agents/skills/java-architect/SKILL.md](.agents/skills/java-architect/SKILL.md) | [upstream-source.md](.agents/skills/java-architect/references/upstream-source.md) | **Java Architect** — Designs clean/hexagonal package boundaries (`config`, `domain`, `service`), DDD models, and OpenSpec `design.md` |
-| **`openspec-reviewer`** | [.agents/skills/openspec-reviewer/SKILL.md](.agents/skills/openspec-reviewer/SKILL.md) | [upstream-source.md](.agents/skills/openspec-reviewer/references/upstream-source.md) | **Spec & Design Reviewer** — Enforces pre-implementation `review.md` gates (`OPTIMAL` / `IMPROVABLE` / `RETHINK`) across `proposal.md`, `specs/`, `design.md`, and `tasks.md` |
-| **`code-review-expert`** | [.agents/skills/code-review-expert/SKILL.md](.agents/skills/code-review-expert/SKILL.md) | [upstream-source.md](.agents/skills/code-review-expert/references/upstream-source.md) | **Code Review Expert** — Audits implementation against OpenSpec scenarios, layer purity, security, Java 21/Gradle hygiene, and JUnit 5 coverage before archive/merge |
-| **`readme-generator`** | [.agents/skills/readme-generator/SKILL.md](.agents/skills/readme-generator/SKILL.md) | [upstream-source.md](.agents/skills/readme-generator/references/upstream-source.md) | **README Generator & Documenter** — Zero-hallucination scanning to keep `README.md` and `package-info.java` files accurate |
-| **`git-workflow-manager`** | [.agents/skills/git-workflow-manager/SKILL.md](.agents/skills/git-workflow-manager/SKILL.md) | [upstream-source.md](.agents/skills/git-workflow-manager/references/upstream-source.md) | **Git Workflow Manager** — Manages feature branches, Conventional Commits linked to OpenSpec changes, and pre-commit verification |
-| **`cicd-expert`** | [.agents/skills/cicd-expert/SKILL.md](.agents/skills/cicd-expert/SKILL.md) | [upstream-source.md](.agents/skills/cicd-expert/references/upstream-source.md) | **CI/CD Expert** — Designs and optimizes reproducible Java 21 + Gradle 9 build/test pipelines and caching |
+| Name (`name`) | Unified Skill File | Role & Code-Writing Boundary |
+| :--- | :--- | :--- |
+| **`first-principles-thinking`** | [.agents/skills/first-principles-thinking/SKILL.md](.agents/skills/first-principles-thinking/SKILL.md) | **First-Principles Thinking Expert (No-Code Role)** — Challenges assumptions, isolates fundamental truths, and rebuilds solutions from scratch during `proposal.md` and `design.md` |
+| **`java-architect`** | [.agents/skills/java-architect/SKILL.md](.agents/skills/java-architect/SKILL.md) | **Java Architect & Deep-Module Designer (No-Code Role)** — Designs clean/hexagonal package boundaries (`config`, `domain`, `service`), deep module interfaces, and **Confirmed Test Seams** in `design.md` |
+| **`openspec-reviewer`** | [.agents/skills/openspec-reviewer/SKILL.md](.agents/skills/openspec-reviewer/SKILL.md) | **Spec & Design Reviewer (No-Code Role)** — Enforces pre-implementation `review.md` gates (`OPTIMAL` / `IMPROVABLE` / `RETHINK`), seam definitions, and vertical-slice `tasks.md` |
+| **`test-driven-development`** | [.agents/skills/test-driven-development/SKILL.md](.agents/skills/test-driven-development/SKILL.md) | **TDD Discipline** — Enforces the Iron Law (`NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST`), pre-agreed test seams, vertical Red $\rightarrow$ Green tracer-bullet slices, Gate Functions 1 & 2, and Mutation Checks |
+| **`java-expert`** | [.agents/skills/java-expert/SKILL.md](.agents/skills/java-expert/SKILL.md) | **Java Development Expert (Sole Code Author)** — Executes the Red $\rightarrow$ Green loop in Java 21 LTS, Gradle 9 Groovy DSL, `gradle/libs.versions.toml`, and JUnit 5 + AssertJ, and applies refactorings suggested by `code-review-expert` |
+| **`code-review-expert`** | [.agents/skills/code-review-expert/SKILL.md](.agents/skills/code-review-expert/SKILL.md) | **Code Review & Refactoring Advisor (No-Code Role)** — Read-only Two-Axis Audit (Spec/Seams + Standards/Fowler Smells) that feeds concrete refactoring instructions back to `java-expert` |
+| **`readme-generator`** | [.agents/skills/readme-generator/SKILL.md](.agents/skills/readme-generator/SKILL.md) | **README Generator & Documenter** — Zero-hallucination scanning to keep `README.md` and `package-info.java` files accurate |
+| **`git-workflow-manager`** | [.agents/skills/git-workflow-manager/SKILL.md](.agents/skills/git-workflow-manager/SKILL.md) | **Git Workflow Manager** — Manages feature branches, Conventional Commits linked to OpenSpec changes, and pre-commit verification |
+| **`cicd-expert`** | [.agents/skills/cicd-expert/SKILL.md](.agents/skills/cicd-expert/SKILL.md) | **CI/CD Expert** — Designs and optimizes reproducible Java 21 + Gradle 9 build/test pipelines and caching |
