@@ -20,8 +20,8 @@
 | **8. `Q4` Horizontal Row Clear & Gravity** | Full horizontal row or horizontal match clears; stacked blocks above lose original brick shape and drop independently under gravity | `ADR 0001` (`DEC-08`), `spec.md` Req 5 (Scenarios 5.1–5.2), `design.md` §2.3 | **PASS** |
 | **9. `Q5` ASCII Symbols, Bounds & Overflow** | Printable 7-bit ASCII (`0x21..0x7E`), negative/zero forbidden, `min >= largestBrick (3)`, `max` configurable default `20x20`, vertical overflow $\rightarrow$ `VERTICAL_OVERFLOW` (`GAME_OVER`) | `ADR 0001` (`DEC-02`, `DEC-09`), `spec.md` Req 1, Req 2 & Req 6 | **PASS** |
 | **10. Expansion Points 1 & 2** | Expansion Point 1 (Winnability validation deferred) & Expansion Point 2 (Variable brick shapes/sizes noted in design via span methods without overbuilding) | `ADR 0001` (`DEC-12`, `DEC-13`), `design.md` §4.1–4.2 | **PASS** |
-| **11. State-Based Testing & Real Integration** | Assert on domain state (`Grid`, `GameSnapshot`, `ValidationResult`), not console output; include real multi-component integration tests | `tasks.md` Deliveries `D1–D8` | **PASS** |
-| **12. Trackable Delivery Breakdown** | Master Trackable Delivery Matrix (`D1–D8`) with Spec/ADR links, deliverables, review gates, commit checkpoints, status, and SHA tracking | `tasks.md` §1–§4 | **PASS** |
+| **11. State-Based Testing & Real Integration** | Assert on domain state (`Grid`, `GameSnapshot`, `ValidationResult`), not console output; include real multi-component integration tests | `tasks.md` (`UOW-01`–`UOW-20`) | **PASS** |
+| **12. Atomic Units of Work (`UOW`) & Tracking Matrix** | 20 micro-scoped Units of Work (`UOW-01`–`UOW-20` across `D1–D8`) sized for lower-thought-level agents with **TDD Tests First (`Step 1: RED`)** and a Master `UOW` Tracking Matrix | `tasks.md` §0–§3 | **PASS** |
 
 ---
 

@@ -170,20 +170,23 @@ Break the approved specification into `openspec/changes/<change-id>/tasks.md`.
   2. **Migrate**: Move callers over in bounded batches, keeping all tests green.
   3. **Contract**: Remove the deprecated interface once zero callers remain.
 
-### 4.2 Unambiguous Task & Trackable Delivery Structure (`obra/writing-plans`)
-Write `openspec/changes/<change-id>/tasks.md` so every vertical slice is a **Trackable Delivery (`D1`..`Dn`)** with a **Master Trackable Delivery Matrix** at the top of the file and an engineer with a fresh context window can implement each delivery with zero guesswork (while **never writing the implementation bodies for them**). As each delivery is completed, the developer agent MUST update its checkboxes (`[x]`), `Status` (`DELIVERED`), and `Commit SHA` in `tasks.md`:
+### 4.2 Atomic Units of Work (`UOW`) & Tracking Matrix for Lower-Thought-Level Agents (`obra/writing-plans`)
+Write `openspec/changes/<change-id>/tasks.md` by breaking each delivery (`D1`..`Dk`) into **small, atomic Units of Work (`UOW-01`..`UOW-N`)** sized and specified so a lower-thought-level agent can execute each `UOW` mechanically with **zero guesswork** and **strict TDD Tests First (`Step 1: RED Test First` $\rightarrow$ `Step 2: Verify RED` $\rightarrow$ `Step 3: GREEN Implementation` $\rightarrow$ `Step 4: Verify GREEN`)** (while **never writing the implementation bodies for them**).
+- Each `UOW` must touch at most **1 focused concept / 1 test class + 1 production class/method**.
+- **Step 1 (`RED`) is ALWAYS writing the failing JUnit 5 + AssertJ test first** (with exact `@Test` method names and assertions, plus only a minimal compile stub if the production type does not exist yet).
+- Start `tasks.md` with the **Master Unit-of-Work (`UOW`) Tracking Matrix** (`UOW ID | Delivery | Atomic Unit of Work Name | Spec & ADR | Step 1: Test File Written FIRST (RED) | Step 3: Production File Implemented (GREEN) | Verification Command | Status | Commit SHA`). As each `UOW` completes, the developer agent MUST update its checkboxes (`[x]`), `Status` (`DELIVERED`), and `Commit SHA` in `tasks.md`:
 
 ```markdown
-# Trackable TDD Delivery Plan (`tasks.md`): <Change Title>
+# Atomic Unit-of-Work (`UOW`) TDD Plan & Tracking Matrix (`tasks.md`): <Change Title>
 
 **Goal:** [One sentence describing what this builds]
 **Spec:** `openspec/changes/<change-id>/proposal.md` & `specs/`
 **Design & ADR:** `openspec/changes/<change-id>/design.md` & `docs/adr/0001-...md`
 
-## 1. Master Trackable Delivery Matrix (`D1` – `Dn`)
-| Delivery ID | Deliverable Name | Spec Reqs & ADR Decisions | Production Artifacts | Test Artifacts (State-Based) | Verification & Review Gate | Target Commit Message | Status | Commit SHA |
+## 1. Master Unit-of-Work (`UOW`) Tracking Matrix (`UOW-01` – `UOW-N`)
+| UOW ID | Delivery | Atomic Unit of Work Name | Spec & ADR | Step 1: Test File Written FIRST (`RED`) | Step 3: Production File Implemented (`GREEN`) | Verification Command | Status | Commit SHA |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **D1** | [Slice 1 Name] | Req X, `DEC-01` | `ClassA.java` | `ClassATest.java` | `./gradlew test` + `code-review-expert` | `feat(scope): deliver D1 ... [changes/<change-id>:D1]` | `PENDING` | `—` |
+| **UOW-01** | **D1** | [Single-Concept Micro-Slice] | Req X, `DEC-01` | `ClassATest.java` | `ClassA.java` | `./gradlew test --tests pkg.ClassATest` | `PENDING` | `—` |
 
 ## Global Constraints
 - Java 21 toolchain (`Eclipse Temurin 21`), Gradle 9.0.0 Groovy DSL (`build.gradle`, `settings.gradle`, `gradle/libs.versions.toml` — zero Kotlin).
@@ -191,32 +194,24 @@ Write `openspec/changes/<change-id>/tasks.md` so every vertical slice is a **Tra
 - Pre-Agreed Test Seams only; zero speculative interfaces or mocking of internal collaborators.
 
 ## Review Focus (Mandatory Edge-Case Coverage)
-1. [Input class / failure mode 1 -> Pinned in Delivery D1]
-2. [Input class / failure mode 2 -> Pinned in Delivery D2]
-3. [Input class / failure mode 3 -> Pinned in Delivery D3]
-4. [Input class / failure mode 4 -> Pinned in Delivery D4]
-5. [Input class / failure mode 5 -> Pinned in Delivery D5]
+1. [Input class / failure mode 1 -> Pinned in UOW-01]
+2. [Input class / failure mode 2 -> Pinned in UOW-02]
+3. [Input class / failure mode 3 -> Pinned in UOW-03]
+4. [Input class / failure mode 4 -> Pinned in UOW-04]
+5. [Input class / failure mode 5 -> Pinned in UOW-05]
 
 ---
 
-### Delivery D1: [Vertical Slice Name] (`P0`)
+### `UOW-01`: [Atomic Unit of Work Name] (`Delivery D1`, `P0`)
 - **Status:** `PENDING`
 - **Blocked by:** None (Frontier Ready)
-- **Demoable Behavior:** [What observable behavior works end-to-end when this delivery completes]
-- **Pre-Agreed Seam:** `[package.ClassName#methodName]`
-- **Files:**
-  - Create/Modify: `src/main/java/...`
-  - Test: `src/test/java/...`
-- **Interfaces:**
-  - *Consumes:* `[exact signatures from existing modules or earlier deliveries]`
-  - *Produces:* `[exact method/record signatures later deliveries rely on]`
-
-- [ ] **D1.1 (RED):** Write failing JUnit 5 + AssertJ test at `[Seam]` covering `Scenario: [Name]` (and Review Focus item #[N]).
-- [ ] **D1.2 (Verify RED):** Run `./gradlew test --tests "[TestClass].[testMethod]" --info` and confirm it fails for the expected behavioral reason (not a compile error).
-- [ ] **D1.3 (GREEN):** Implement minimal production code in `[File]` to satisfy the scenario.
-- [ ] **D1.4 (Verify GREEN + Mutation Check):** Run `./gradlew check --build-cache --parallel` (0 failures) and verify breaking the production condition turns the test red.
-- [ ] **D1.5 (Two-Axis Code Review & Refactor Loop):** Run `code-review-expert` (read-only) -> feed refactoring recommendations back to `java-expert` -> re-run `./gradlew check`.
-- [ ] **D1.6 (Commit & Record SHA):** Commit vertical delivery with Conventional Commit referencing `[changes/<change-id>:D1]` and record the commit SHA in the Master Trackable Delivery Matrix above.
+- **Target Seam:** `[package.ClassName#methodName]`
+- **Step-by-Step Execution (TDD Tests First):**
+  - [ ] **Step 1 (`RED` — Write Test First):** Write failing JUnit 5 + AssertJ `@Test` methods `[exactTestMethodNames]` in `src/test/java/...` covering `Scenario: [Name]` (plus minimal compile stub if type does not exist yet).
+  - [ ] **Step 2 (`Verify RED`):** Run `./gradlew test --tests "[TestClass]"` and confirm it fails on the assertion/stub.
+  - [ ] **Step 3 (`GREEN` — Minimal Implementation):** Implement exact signature `[exactSignature]` and invariants in `src/main/java/...`.
+  - [ ] **Step 4 (`Verify GREEN + Mutation Check`):** Run `./gradlew check --build-cache --parallel` (0 failures, 0 warnings) and verify boundary mutations fail tests.
+  - [ ] **Step 5 (`Review & Commit`):** Run `code-review-expert` (read-only) -> apply refactorings -> commit `[changes/<change-id>:UOW-01]` and record `DELIVERED` + Commit SHA in the Master `UOW` Tracking Matrix above.
 ```
 
 ---

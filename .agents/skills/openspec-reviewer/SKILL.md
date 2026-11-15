@@ -90,11 +90,11 @@ Review an OpenSpec proposal (`proposal.md`) and downstream specification artifac
 - Verify `java-architect` evaluated alternatives (**Design It Twice**), kept `domain/` framework-agnostic with Java 21 `record`/`sealed` types and constructor injection, and included the **`## Confirmed Test Seams`** table (`Seam Name & Public Interface | Dependency Category & Adapter Strategy | What It Catches | What It Misses`).
 - Verify zero production or test code was written during the design phase.
 
-### Gate 4: Reviewing `tasks.md` (Master Trackable Delivery Matrix + Vertical Red-Green Deliveries + Review-Driven Refactor)
-- **Reject Horizontal Slicing**: Reject any `tasks.md` that separates "Write all production classes" from "Write unit tests later".
-- **Enforce Master Trackable Delivery Matrix (`D1`–`Dn`)**: Verify `tasks.md` starts with a **Master Trackable Delivery Matrix** (`Delivery ID | Deliverable Name | Spec Reqs & ADR Decisions | Production Artifacts | Test Artifacts | Verification & Review Gate | Target Commit Message | Status | Commit SHA`) so every delivery is an independently buildable, testable, reviewable, and committable increment.
-- **Enforce Vertical Tracer-Bullet Deliveries**: Every delivery (`D1`..`Dn`) must represent one vertical slice at a confirmed seam following `RED (failing JUnit 5 test on actual domain/service state)` $\rightarrow$ `Verify RED` $\rightarrow$ `GREEN (minimal Java 21 code)` $\rightarrow$ `Verify GREEN (./gradlew check + Mutation Check)` $\rightarrow$ `Two-Axis Code Review & Refactor Loop` $\rightarrow$ `Commit & Record SHA in tasks.md`.
-- **Enforce Final Integration & Documentation Delivery**: Confirm the final delivery includes real multi-component integration tests (zero mocks), unused-code cleanup, `readme-generator` sync, and `git-workflow-manager` commit.
+### Gate 4: Reviewing `tasks.md` (Master `UOW` Tracking Matrix + Atomic Units of Work for Lower-Thought-Level Agents)
+- **Reject Horizontal Slicing or Coarse Bundling**: Reject any `tasks.md` that separates "Write all production classes" from "Write unit tests later" or bundles multiple unrelated classes into one large step.
+- **Enforce Master Unit-of-Work (`UOW-01`–`UOW-N`) Tracking Matrix**: Verify `tasks.md` starts with a **Master `UOW` Tracking Matrix** (`UOW ID | Delivery | Atomic Unit of Work Name | Spec & ADR | Step 1: Test File Written FIRST (RED) | Step 3: Production File Implemented (GREEN) | Verification Command | Status | Commit SHA`) so each unit of work is small and unambiguous enough for a lower-thought-level agent to execute mechanically.
+- **Enforce TDD Tests First (`Step 1: RED` Always First)**: Every `UOW` (`UOW-01`..`UOW-N`) must put the JUnit 5 `@Test` file and exact `@Test` method names in **Step 1 (`RED`)** before any production implementation in **Step 3 (`GREEN`)**, followed by `Verify GREEN`, `code-review-expert` audit, commit, and recording the SHA in `tasks.md`.
+- **Enforce Final Integration & Documentation `UOW`**: Confirm the final `UOW` includes real multi-component integration tests (zero mocks), unused-code cleanup, `readme-generator` sync, and `git-workflow-manager` commit.
 
 ---
 
