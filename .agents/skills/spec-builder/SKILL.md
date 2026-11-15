@@ -46,6 +46,12 @@ When requirements or trade-offs are open, map the open decisions as a **design t
   ```
 - **Inline Domain Updates**: As soon as a domain term is settled during grilling, update `GLOSSARY.md` immediately (per `system-design`).
 - **Lay Out the Approaches (`obra/brainstorming`)**: Before writing the spec, summarize the 2–3 viable implementation approaches, what each trades off, and which one is selected.
+- **Standard Architecture & UX Questions to Close During Grilling**:
+  1. **Sample Interface / Interaction Mockups**: Provide concrete ASCII/UI/API mockups showing startup/config display, active state, validation error rejection banner, and completion/retry prompt.
+  2. **Parameter Configurability & Zero Hardcoded Paths**: Confirm which parameters are configurable via classpath/stream `Properties` (`InputStream`) and CLI flags, including minimum/maximum bounds and defaults.
+  3. **Logging & Observability Strategy (`SLF4J + Logback`)**: Confirm how operational telemetry (`INFO`, `DEBUG`, `WARN`, `ERROR` to log file / `STDERR`) is separated from user-facing output (`STDOUT` / `Writer`).
+  4. **Deterministic Seeded Randomness (`Random(seed)`)**: Whenever randomness is involved, use a configurable `long seed` so TDD tests are 100% predictive and users can retry the exact same seed/level.
+  5. **Future Expansion Points (Design Considerations Without Overbuilding)**: Explicitly record deferred features or future shape/rule expansions as **Future Expansion Points** in the spec, `design.md`, and Decision Matrix — designing clean seams to allow for them while strictly forbidding building beyond the current specification (YAGNI).
 
 ---
 
@@ -88,17 +94,33 @@ Ordered by priority (`P0` Must-Have, `P1` Should-Have, `P2` Future Architectural
 - **US-1 (`P0`)**: As a `<specific persona/caller>`, I want `<capability>` so that `<measurable benefit>`.
   - *Independent, Negotiable, Valuable, Estimable, Small, Testable.*
 
-## 5. Implementation Decisions & Global Constraints
-- **Global Constraints**: Version floors (Java 21, Gradle 9 Groovy DSL, JUnit 5, AssertJ, SLF4J), dependency limits, naming rules, and platform constraints copied verbatim.
-- **Settled Decisions**: Every architectural and behavioral choice settled during grilling (invent nothing that wasn't decided).
+## 5. Sample Interface / Interaction Mockups
+- Concrete ASCII console, UI, or API payload mockups covering:
+  1. Startup / Configuration Banner
+  2. Active / Normal Operation View
+  3. Validation / Error Rejection View (for empty, out-of-bounds, or dodgy inputs)
+  4. Completion / Game-Over / Retry View
 
-## 6. Pre-Agreed Test Seams & Testing Decisions
-- **Agreed Seam(s)**: Exact module interfaces (`package.ClassName#method`) where Red-Green tests will be written.
+## 6. Configurable Parameters (`InputStream` Properties + CLI Flags, Zero Hardcoded Paths)
+| Parameter | Property Key | CLI Flag | Default | Validation Rule (`ValidationErrorCode`) |
+| :--- | :--- | :--- | :--- | :--- |
+
+## 7. Logging & Observability Architecture (`SLF4J + Logback`)
+- Separation of user-facing output (`Writer` / `STDOUT`) from `SLF4J + Logback` diagnostics (`logs/<app>.log` + `WARN`/`ERROR` on `STDERR`).
+- Level mapping: `INFO` (lifecycle/seed/retry/end), `DEBUG` (state transitions/commands), `WARN` (caught validation rejections), `ERROR` (I/O failures).
+
+## 8. Implementation Decisions, Global Constraints & Future Expansion Points
+- **Global Constraints**: Version floors (Java 21, Gradle 9 Groovy DSL, JUnit 5, AssertJ, SLF4J), immutable value objects (`record`), defensive collection/array copying (`List.copyOf`), and zero hardcoded file paths.
+- **Settled Decisions**: Linked to the Master Decision Matrix (`DEC-01`..`DEC-n`) in `docs/adr/NNNN-slug.md`.
+- **Future Expansion Points (Design Considerations Without Overbuilding)**: Document deferred features and extensible seams while strictly building only the current specification (YAGNI).
+
+## 9. Pre-Agreed Test Seams & Testing Decisions
+- **Agreed Seam(s)**: Exact module interfaces (`package.ClassName#method`) where Red-Green tests will be written (testing actual domain/service state, not console output strings, plus real multi-component integration tests without mocks).
 - **Dependency & Adapter Strategy**: Real in-process collaborators vs. local-substitutable adapters vs. behavioral fakes.
 - **Review Focus (5 High-Risk Input Classes / Failure Modes)**:
-  List the 5 input classes, boundary conditions, or failure modes implied by the spec that are most likely to bite in production (null/blank inputs, concurrency/race conditions, empty collections, malformed config, resource exhaustion) — each must map to a test in `tasks.md`.
+  List the 5 input classes, boundary conditions, or failure modes implied by the spec that are most likely to bite in production (null/blank inputs, negative/oversized bounds, dodgy commands, malformed config, overflow) — each must map to a test in `tasks.md`.
 
-## 7. What Changes & Capabilities Touched
+## 10. What Changes & Capabilities Touched
 - **New Capabilities**: `specs/<new-capability>/spec.md`
 - **Modified Capabilities**: `specs/<existing-capability>/spec.md`
 ```
@@ -199,12 +221,13 @@ Write `openspec/changes/<change-id>/tasks.md` so every vertical slice is a **Tra
 
 ---
 
-## 5. Phase 5: 5-Point Self-Review & Builder Check (`writing-plans` + `builder-check-prompt.md`)
+## 5. Phase 5: 6-Point Self-Review & Builder Check (`writing-plans` + `builder-check-prompt.md`)
 
-Before handing `proposal.md`, `specs/`, and `tasks.md` to `openspec-reviewer`, run this mandatory 5-point self-audit:
+Before handing `proposal.md`, `specs/`, and `tasks.md` to `openspec-reviewer`, run this mandatory 6-point self-audit:
 
-1. **Spec Coverage Check**: Does every `### Requirement:` and `#### Scenario:` in `specs/<capability>/spec.md` map to a specific task and step in `tasks.md`?
-2. **Builder Check (`builder-check-prompt.md`)**: Read the spec and plan as a fresh engineer who cannot talk to the author. Are there any places where the builder would have to guess on a decision that changes behavior? Resolve them now.
-3. **Type & Signature Consistency**: Do the class names, record components, and method signatures in `Produces` / `Consumes` blocks match identically across Tasks 1..N and `GLOSSARY.md`?
-4. **Review Focus Coverage**: Are all 5 high-risk input classes / failure modes from the `Review Focus` section explicitly tested in the owning task's RED step?
-5. **Proportion & Non-Coding Honesty**: Does the plan specify **interfaces, exact values, and test assertions** without writing out the production implementation bodies? (A plan that writes all the production code has violated the Specification Builder boundary.)
+1. **Spec Coverage Check**: Does every `### Requirement:` and `#### Scenario:` in `specs/<capability>/spec.md` map to a specific Trackable Delivery (`D1`..`Dn`) and step in `tasks.md`?
+2. **Trackable Delivery Matrix Check**: Does `tasks.md` start with a **Master Trackable Delivery Matrix (`D1`–`Dn`)** listing each delivery's Spec/ADR coverage, production & test artifacts, verification gate, target commit message, `Status`, and `Commit SHA`?
+3. **Builder Check (`builder-check-prompt.md`)**: Read the spec and plan as a fresh engineer who cannot talk to the author. Are there any places where the builder would have to guess on a decision that changes behavior? Resolve them now and record in the Decision Matrix.
+4. **Type & Signature Consistency**: Do the class names, record components, and method signatures in `Produces` / `Consumes` blocks match identically across Deliveries `D1..Dn` and `GLOSSARY.md`?
+5. **Review Focus Coverage**: Are all 5 high-risk input classes / failure modes from the `Review Focus` section explicitly tested in the owning delivery's RED step?
+6. **Proportion & Non-Coding Honesty**: Does the plan specify **interfaces, exact values, and test assertions** without writing out the production implementation bodies? (A plan that writes all the production code has violated the Specification Builder boundary.)

@@ -90,10 +90,11 @@ Review an OpenSpec proposal (`proposal.md`) and downstream specification artifac
 - Verify `java-architect` evaluated alternatives (**Design It Twice**), kept `domain/` framework-agnostic with Java 21 `record`/`sealed` types and constructor injection, and included the **`## Confirmed Test Seams`** table (`Seam Name & Public Interface | Dependency Category & Adapter Strategy | What It Catches | What It Misses`).
 - Verify zero production or test code was written during the design phase.
 
-### Gate 4: Reviewing `tasks.md` (Vertical Red-Green Slices + Review-Driven Refactor)
+### Gate 4: Reviewing `tasks.md` (Master Trackable Delivery Matrix + Vertical Red-Green Deliveries + Review-Driven Refactor)
 - **Reject Horizontal Slicing**: Reject any `tasks.md` that separates "Write all production classes" from "Write unit tests later".
-- **Enforce Vertical Tracer-Bullet Slices**: Every implementation task must represent one vertical slice at a confirmed seam following `RED (failing JUnit 5 test)` $\rightarrow$ `Verify RED` $\rightarrow$ `GREEN (minimal Java 21 code)` $\rightarrow$ `Verify GREEN (./gradlew check + Mutation Check)`.
-- **Enforce Final Review & Refactor Loop**: Confirm `tasks.md` ends with a read-only `code-review-expert` audit that feeds refactoring recommendations back to `java-expert`, followed by `readme-generator` sync and `git-workflow-manager` commit.
+- **Enforce Master Trackable Delivery Matrix (`D1`–`Dn`)**: Verify `tasks.md` starts with a **Master Trackable Delivery Matrix** (`Delivery ID | Deliverable Name | Spec Reqs & ADR Decisions | Production Artifacts | Test Artifacts | Verification & Review Gate | Target Commit Message | Status | Commit SHA`) so every delivery is an independently buildable, testable, reviewable, and committable increment.
+- **Enforce Vertical Tracer-Bullet Deliveries**: Every delivery (`D1`..`Dn`) must represent one vertical slice at a confirmed seam following `RED (failing JUnit 5 test on actual domain/service state)` $\rightarrow$ `Verify RED` $\rightarrow$ `GREEN (minimal Java 21 code)` $\rightarrow$ `Verify GREEN (./gradlew check + Mutation Check)` $\rightarrow$ `Two-Axis Code Review & Refactor Loop` $\rightarrow$ `Commit & Record SHA in tasks.md`.
+- **Enforce Final Integration & Documentation Delivery**: Confirm the final delivery includes real multi-component integration tests (zero mocks), unused-code cleanup, `readme-generator` sync, and `git-workflow-manager` commit.
 
 ---
 

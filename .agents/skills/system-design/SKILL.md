@@ -225,5 +225,7 @@ When authoring `openspec/changes/<change-id>/design.md` for a feature or archite
      - **Unit Tests at Deep Module Seams**: Fast, behavioral verification of domain invariants, edge cases, and error paths.
      - **Integration Tests at Adapter Boundaries**: Database queries, HTTP controllers, serialization, and configuration wiring.
      - **End-to-End / Smoke Tests**: Critical user workflows across the assembled system.
-5. **Risks, Trade-offs & Migration Plan**:
+5. **Future Expansion Points (Design Considerations Without Overbuilding / Strict YAGNI)**:
+   - Document agreed future expansion points (e.g., deferred validators or extensible domain geometry/strategies) and show how the module interface/seam accommodates them cleanly in the future **without writing any unrequested code today**.
+6. **Risks, Trade-offs & Migration Plan**:
    - Failure modes, backward compatibility, rollback triggers, and phased rollout steps.

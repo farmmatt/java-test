@@ -122,11 +122,12 @@ Confirm:
    - Missing validation for zero, negative, empty, null, unauthorized, or malformed input
    *(A mutation nothing catches marks the behavior as unprotected or the test as tautological.)*
 
-### Step 5: Refactoring via `code-review-expert` $\rightarrow$ Developer Feedback Loop
+### Step 5: Refactoring via `code-review-expert` $\rightarrow$ Developer Feedback Loop & Seeding Status Back to `tasks.md`
 Refactoring is **not** performed ad-hoc during the Red $\rightarrow$ Green loop:
-1. Once all vertical slices for the task/change are green, **`code-review-expert`** (which **never writes code**) audits the diff against the spec, agreed seams, TDD rules, and the 12-item Fowler Code Smell baseline.
-2. **`code-review-expert`** outputs concrete refactoring recommendations (e.g., extracting duplicated logic, fixing Feature Envy, bundling Data Clumps into Java 21 `record` types).
+1. Once all vertical steps for a Trackable Delivery (`D#` in `tasks.md`) are green, **`code-review-expert`** (which **never writes code**) audits the diff against the spec, agreed seams, TDD rules, and the 12-item Fowler Code Smell baseline.
+2. **`code-review-expert`** outputs concrete refactoring recommendations (e.g., extracting duplicated logic, fixing Feature Envy, bundling Data Clumps into Java 21 `record` types, stripping dead/unused code).
 3. Those recommendations are fed back to the developer agent (**`java-expert`**), which applies the refactoring while keeping `./gradlew check` 100% green.
+4. **Seed Delivery Progress Back into `tasks.md`**: Once the delivery passes `./gradlew check` and `code-review-expert` review and is committed via `git-workflow-manager`, update `openspec/changes/<change-id>/tasks.md` on disk by checking off `[x]`, setting `Status` to `DELIVERED`, and recording the Git `Commit SHA` in the **Master Trackable Delivery Matrix**.
 
 ---
 
